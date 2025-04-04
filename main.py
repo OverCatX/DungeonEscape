@@ -9,7 +9,7 @@ def main():
 
     #Game
     game = Game()
-    game.run()
+    game.start()
 
     pygame.quit()
 if __name__ == "__main__":
