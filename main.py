@@ -1,5 +1,16 @@
+import pygame
+
 from game import Game
 
-if __name__ == "__main__":
+def main():
+    pygame.init()
+    pygame.font.init()
+    pygame.mixer.init()
+
+    #Game
     game = Game()
     game.run()
+
+    pygame.quit()
+if __name__ == "__main__":
+    main()
