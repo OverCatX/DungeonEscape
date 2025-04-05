@@ -9,10 +9,13 @@ class Menu:
         self.font = pygame.font.Font(None, 36)
         self.color = (255, 255, 255)
         self.player_name = ""
-        self.input_box = pygame.Rect(200, 200, 400, 40)
-        self.enter_button = pygame.Rect(200, 280, 400, 40)
-        self.start_button = pygame.Rect(200, 280, 400, 40)
-        self.back_button = pygame.Rect(200, 340, 400, 40)
+        screen_width, screen_height = self.screen.get_size()
+        input_box_width = 400
+        input_box_height = 40
+        input_x = screen_width // 2 - input_box_width // 2
+        self.input_box = pygame.Rect(input_x, 100, input_box_width, input_box_height)
+        self.start_button = pygame.Rect(input_x, 280, input_box_width, input_box_height)
+        self.back_button = pygame.Rect(input_x, 340, input_box_width, input_box_height)
         self.exit_button = pygame.Rect(200, 340, 400, 40)
         self.color_inactive = pygame.Color('lightskyblue3')
         self.color_active = pygame.Color('dodgerblue2')
@@ -25,30 +28,6 @@ class Menu:
         while running:
             self.screen.fill(self.color)
             self.draw_home_buttons()
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.enter_button.collidepoint(event.pos):
-                        return 'enter'
-                    elif self.exit_button.collidepoint(event.pos):
-                        running = False
-                        return 'exit'
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        running = False
-
-            pygame.display.flip()
-            clock.tick(30)
-
-    def start_game(self):
-        clock = pygame.time.Clock()
-        running = True
-        while running:
-            self.screen.fill(self.color)
-            self.draw_start_game_buttons()
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -58,9 +37,9 @@ class Menu:
                     if self.start_button.collidepoint(event.pos) and self.player_name != "":
                         running = False
                         return self.player_name
-                    elif self.back_button.collidepoint(event.pos):
+                    elif self.exit_button.collidepoint(event.pos):
                         running = False
-                        return 'back'
+                        return 'exit'
                 elif event.type == pygame.KEYDOWN:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_BACKSPACE:
@@ -75,29 +54,52 @@ class Menu:
             clock.tick(60)
 
     def draw_home_buttons(self):
-        # Enter Game
-        pygame.draw.rect(self.screen, Config.COLORS['green'], self.enter_button)
-        enter_text = self.font.render("Enter Game", True, (0, 0, 0))
-        self.screen.blit(enter_text, (self.enter_button.x + self.enter_button.width // 2 - enter_text.get_width() // 2,
-                                      self.enter_button.y + self.enter_button.height // 2 - enter_text.get_height() // 2))
-        # Exit
-        pygame.draw.rect(self.screen, Config.COLORS['red'], self.exit_button)
-        exit_text = self.font.render("Exit", True, (0, 0, 0))
-        self.screen.blit(exit_text, (self.exit_button.x + self.exit_button.width // 2 - exit_text.get_width() // 2,
-                                     self.exit_button.y + self.exit_button.height // 2 - exit_text.get_height() // 2))
+        title_text = self.font.render("Dungeon Escape", True, Config.COLORS['black'])
+        title_x = self.screen.get_width() // 2 - title_text.get_width() // 2
+        title_y = 20
+        self.screen.blit(title_text, (title_x, title_y))
 
-    def draw_start_game_buttons(self):
+        label_text = self.font.render("Enter your name:", True, Config.COLORS['black'])
+        label_width = label_text.get_width()
+        label_height = label_text.get_height()
+        spacing = 10
+        input_width = max(300, self.font.size(self.player_name)[0] + 20)
+        input_height = self.input_box.height
+
+        total_width = label_width + spacing + input_width
+        screen_center_x = self.screen.get_width() // 2
+
+        label_x = screen_center_x - total_width // 2
+        input_x = label_x + label_width + spacing
+        y = 150
+        self.input_box.x = input_x
+        self.input_box.y = y
+        self.input_box.w = input_width
+
+        # label
+        label_y = y + (input_height // 2 - label_height // 2)
+        self.screen.blit(label_text, (label_x, label_y))
+
+        #input box
         self.draw_input_box()
-        # Start Game
+
+        #Start button
+        self.start_button.x = self.screen.get_width() // 2 - self.start_button.width // 2
         pygame.draw.rect(self.screen, Config.COLORS['green'], self.start_button)
         start_text = self.font.render("Start Game", True, (0, 0, 0))
-        self.screen.blit(start_text, (self.start_button.x + self.start_button.width // 2 - start_text.get_width() // 2,
-                                      self.start_button.y + self.start_button.height // 2 - start_text.get_height() // 2))
-        # Back
-        pygame.draw.rect(self.screen, pygame.Color('#808080'), self.back_button)
-        back_text = self.font.render("Back", True, (0, 0, 0))
-        self.screen.blit(back_text, (self.back_button.x + self.back_button.width // 2 - back_text.get_width() // 2,
-                                     self.back_button.y + self.back_button.height // 2 - back_text.get_height() // 2))
+        self.screen.blit(start_text, (
+            self.start_button.x + self.start_button.width // 2 - start_text.get_width() // 2,
+            self.start_button.y + self.start_button.height // 2 - start_text.get_height() // 2
+        ))
+
+        #Exit button
+        self.exit_button.x = self.screen.get_width() // 2 - self.exit_button.width // 2
+        pygame.draw.rect(self.screen, Config.COLORS['red'], self.exit_button)
+        exit_text = self.font.render("Exit", True, (0, 0, 0))
+        self.screen.blit(exit_text, (
+            self.exit_button.x + self.exit_button.width // 2 - exit_text.get_width() // 2,
+            self.exit_button.y + self.exit_button.height // 2 - exit_text.get_height() // 2
+        ))
 
     def draw_input_box(self):
         """ วาดช่องกรอกชื่อ """
