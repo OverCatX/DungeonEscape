@@ -3,6 +3,7 @@ import sys
 import pygame
 from DungeonEscape.config import Config
 
+
 class Menu:
     def __init__(self, screen):
         self.screen = screen
@@ -14,9 +15,15 @@ class Menu:
         input_box_height = 40
         input_x = screen_width // 2 - input_box_width // 2
         self.input_box = pygame.Rect(input_x, 100, input_box_width, input_box_height)
+
         self.start_button = pygame.Rect(input_x, 280, input_box_width, input_box_height)
         self.back_button = pygame.Rect(input_x, 340, input_box_width, input_box_height)
         self.exit_button = pygame.Rect(200, 340, 400, 40)
+
+        self.progressive_button = pygame.Rect(input_x, 200, input_box_width, input_box_height)
+        self.hard_mode_button = pygame.Rect(input_x, 260, input_box_width, input_box_height)
+        self.back_button = pygame.Rect(input_x, 320, input_box_width, input_box_height)
+
         self.color_inactive = pygame.Color('lightskyblue3')
         self.color_active = pygame.Color('dodgerblue2')
         self.color_rect = self.color_inactive
@@ -100,6 +107,68 @@ class Menu:
             self.exit_button.x + self.exit_button.width // 2 - exit_text.get_width() // 2,
             self.exit_button.y + self.exit_button.height // 2 - exit_text.get_height() // 2
         ))
+
+    def select_mode(self, player_name):
+        """หน้าเลือกโหมดเกม"""
+        clock = pygame.time.Clock()
+        running = True
+
+        while running:
+            self.screen.fill(Config.COLORS['white'])
+            self.draw_select_mode_buttons(player_name)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.progressive_button.collidepoint(event.pos):
+                        return "progressive"
+                    elif self.hard_mode_button.collidepoint(event.pos):
+                        return "hard"
+                    elif self.back_button.collidepoint(event.pos):
+                        return 'back'
+
+            pygame.display.flip()
+            clock.tick(60)
+
+        return None
+
+    def draw_select_mode_buttons(self, player_name):
+        # Select Mode
+        title_text = self.font.render("Select Mode", True, Config.COLORS['black'])
+        title_rect = title_text.get_rect(center=(self.screen.get_width() // 2, 50))
+        self.screen.blit(title_text, title_rect)
+
+
+        #Welcome Text
+        welcome_text = self.font.render(f"Welcome: {player_name}", True, Config.COLORS['black'])
+        welcome_rect = welcome_text.get_rect(center=(self.screen.get_width() // 2, 100))
+        self.screen.blit(welcome_text, welcome_rect)
+
+        # Progressive Mode
+        pygame.draw.rect(self.screen, pygame.Color('#0097A7'), self.progressive_button)
+        progressive_text = self.font.render("Progressive", True, Config.COLORS['white'])
+        progressive_rect = progressive_text.get_rect(center=self.progressive_button.center)
+        self.screen.blit(progressive_text, progressive_rect)
+
+        # ปุ่มโหมดยาก
+        pygame.draw.rect(self.screen, Config.COLORS['red'], self.hard_mode_button)
+        hard_text = self.font.render("Hard", True, Config.COLORS['white'])
+        hard_rect = hard_text.get_rect(center=self.hard_mode_button.center)
+        self.screen.blit(hard_text, hard_rect)
+
+        # ปุ่มกลับ
+        pygame.draw.rect(self.screen, Config.COLORS['gray'], self.back_button)
+        back_text = self.font.render("Back", True, Config.COLORS['white'])
+        back_rect = back_text.get_rect(center=self.back_button.center)
+        self.screen.blit(back_text, back_rect)
+
+        # เส้นขอบปุ่ม
+        pygame.draw.rect(self.screen, Config.COLORS['black'], self.progressive_button, 2)
+        pygame.draw.rect(self.screen, Config.COLORS['black'], self.hard_mode_button, 2)
+        pygame.draw.rect(self.screen, Config.COLORS['black'], self.back_button, 2)
 
     def draw_input_box(self):
         """ วาดช่องกรอกชื่อ """

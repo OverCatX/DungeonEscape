@@ -1,6 +1,6 @@
 import pygame
 from DungeonEscape.config import Config
-from DungeonEscape.entities.Player import Player
+from DungeonEscape.db.player_data import PlayerDB
 from DungeonEscape.ui.menu import Menu
 
 class Game:
@@ -26,17 +26,28 @@ class Game:
         if result == 'exit':
             self.running = False
         else:
-            self.game_data['state'] = 'on_game'
-            self.player = Player(name=result)
-            print(self.player.name)
+            self.game_data['state'] = 'select_mode'
+            self.player = PlayerDB().player_login(result)
+            # print(self.player.name)
+
+    def select_mode(self):
+        result = self.menu.select_mode(self.player.name)
+        if result == 'back':
+            self.game_data['state'] = 'home'
+        elif result == 'progressive':
+            self.game_data['state'] = 'progressive'
+
+    def on_game_progressive(self):
+        pass
 
     def run(self):
         self.running = True
         while self.running:
             if self.game_data['state'] == 'home':
                 self.home_screen()
-            elif self.game_data['state'] == 'on_game':
-                pass
-
+            elif self.game_data['state'] == 'select_mode':
+                self.select_mode()
+            elif self.game_data['state'] == 'progressive':
+                self.on_game_progressive()
 game = Game()
 game.run()
