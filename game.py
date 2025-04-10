@@ -1,6 +1,9 @@
+import sys
+
 import pygame
 from DungeonEscape.config import Config
 from DungeonEscape.db.player_data import PlayerDB
+from DungeonEscape.entities.Player import Player
 from DungeonEscape.ui.menu import Menu
 
 class Game:
@@ -15,11 +18,17 @@ class Game:
             'state': 'home'
         }
         self.running = False
-        self.player = None
+
+        # Sprites Player
+        self.player = Player()
         self.map = None
         self.enemies = []
         self.items = []
         self.traps = []
+
+        # Groups
+        self.moving_sprites = pygame.sprite.Group()
+        self.moving_sprites.add(self.player)
 
     def home_screen(self):
         result = self.menu.home_screen()
@@ -38,7 +47,18 @@ class Game:
             self.game_data['state'] = 'progressive'
 
     def on_game_progressive(self):
-        pass
+        while self.running:
+            dt = self.clock.tick(Config.FPS) / 1000
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            self.screen.fill((255, 255, 255))
+            self.moving_sprites.update(dt)
+            self.moving_sprites.draw(self.screen)
+            pygame.display.flip()
+            self.clock.tick(Config.FPS)
+        pygame.quit()
 
     def run(self):
         self.running = True

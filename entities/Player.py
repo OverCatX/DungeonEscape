@@ -1,36 +1,51 @@
 import pygame
 
-from DungeonEscape.db.player_data import PlayerDB
 from DungeonEscape.entities.Entity import Entity
+
 
 class Player(Entity):
     def __init__(self, x=0, y=0, sprite=None, health=100, armor=0, name="Player",
                  time_played=0, enemies_defeated=0, items_collected=0, max_state=0):
-        super().__init__(x, y, sprite, health, armor)
+        super().__init__(x, y)
         self.name = name
-        self.speed = 5
-        self.attack_animation = False
-        self.sprites_up = []
-        self.sprites_down = []
-        self.sprites_left = []
-        self.sprites_right = []
+        self.health = health
+        self.armor = armor
+        self.speed = 3
+
+        # Additional player stats
         self.time_played = time_played
         self.enemies_defeated = enemies_defeated
         self.items_collected = items_collected
         self.max_state = max_state
 
-    def update(self):
-        self.handle_input()
-        super().update()
+    def attack(self):
+        self.attack_animation = True
+
+    def update(self, dt):
+        super().update(dt)  # Update base entity first (move and animation)
+        self.handle_input()  # Handle input for movement
 
     def handle_input(self):
-        pass
+        # Reset move_x and move_y before assigning new values
+        self.move_x = 0
+        self.move_y = 0
 
-    def draw(self, screen):
-        pass
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a]:
+            self.move_x = -self.speed
+        if keys[pygame.K_d]:
+            self.move_x = self.speed
+        if keys[pygame.K_w]:
+            self.move_y = -self.speed
+        if keys[pygame.K_s]:
+            self.move_y = self.speed
+
+        # print(self.move_x, self.move_y)
 
     def take_damage(self, amount):
-        pass
+        self.health -= amount
+        if self.health <= 0:
+            self.die()
 
     def die(self):
         print(f"{self.name} has died.")
