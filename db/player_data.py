@@ -13,6 +13,7 @@ class PlayerDB:
             with open(self.players_db, mode='w', newline='') as file:
                 writer = csv.DictWriter(file, fieldnames=['Username', 'MaxState', 'TimePlayed', 'EnemiesDefeated', 'ItemsCollected', 'LastLogin'])
                 writer.writeheader()
+        self.sprite_path = f'../assets/player/down/0.png'
         self.data = []
 
     def player_exists(self, username) -> bool:
@@ -31,7 +32,7 @@ class PlayerDB:
                 writer = csv.DictWriter(file, fieldnames=['Username', 'MaxState', 'TimePlayed', 'EnemiesDefeated', 'ItemsCollected', 'LastLogin'])
                 writer.writerow({'Username': username, 'MaxState': 0, 'TimePlayed': 0, 'EnemiesDefeated': 0, 'ItemsCollected': 0, 'LastLogin': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
             print(f'{username} was added to Database')
-            return Player(name=username, max_state=0, time_played=0,enemies_defeated=0, items_collected=0)
+            return Player(name=username, max_state=0, time_played=0,enemies_defeated=0, items_collected=0,sprite=self.sprite_path)
         else:
             with open(self.players_db, mode='r') as file:
                 reader = csv.DictReader(file)
