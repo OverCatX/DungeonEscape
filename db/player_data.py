@@ -37,8 +37,13 @@ class PlayerDB:
                 reader = csv.DictReader(file)
                 for row in reader:
                     if row['Username'] == username:
-                        return Player(name=row['Username'], max_state=(row['MaxState']), time_played=(row['TimePlayed']),
-                                      enemies_defeated=(row['EnemiesDefeated']), items_collected=(row['ItemsCollected']))
+                        return Player(
+                            name=row['Username'],
+                            max_state=int(row['MaxState']),
+                            time_played=int(row['TimePlayed']),
+                            enemies_defeated=int(row['EnemiesDefeated']),
+                            items_collected=int(row['ItemsCollected'])
+                        )
 
     def update_player_stats(self, username, max_state, time_played, enemies_defeated, items_collected):
         data = []
