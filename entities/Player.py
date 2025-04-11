@@ -4,29 +4,25 @@ from DungeonEscape.entities.Entity import Entity
 
 
 class Player(Entity):
-    def __init__(self, x=0, y=0, sprite=None, health=100, armor=0, name="Player",
+    def __init__(self, x=0, y=0, health=100, armor=0, name="Player",
                  time_played=0, enemies_defeated=0, items_collected=0, max_state=0):
-        super().__init__(x, y)
+        super().__init__(asset_folder='player' ,x=x, y=y)
         self.name = name
         self.health = health
         self.armor = armor
         self.speed = 3
 
-        # Additional player stats
+        #Player Stats
         self.time_played = time_played
         self.enemies_defeated = enemies_defeated
         self.items_collected = items_collected
         self.max_state = max_state
 
-    def attack(self):
-        self.attack_animation = True
-
     def update(self, dt):
-        super().update(dt)  # Update base entity first (move and animation)
-        self.handle_input()  # Handle input for movement
+        super().update(dt)
+        self.handle_input()
 
     def handle_input(self):
-        # Reset move_x and move_y before assigning new values
         self.move_x = 0
         self.move_y = 0
 
@@ -39,6 +35,9 @@ class Player(Entity):
             self.move_y = -self.speed
         if keys[pygame.K_s]:
             self.move_y = self.speed
+
+        if keys[pygame.K_SPACE]:
+            self.attack()
 
         # print(self.move_x, self.move_y)
 
