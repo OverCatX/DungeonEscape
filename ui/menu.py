@@ -1,7 +1,10 @@
+import math
 import os
 import sys
+import time
 
 import pygame
+import random
 from DungeonEscape.config import Config
 
 
@@ -29,6 +32,7 @@ class Menu:
         self.warning_duration = 1 * 1000
 
         #Player_Progress UI
+        self.particles = []
         self.next_button = pygame.Rect(
             self.screen.get_width() // 2 - 140,
             self.screen.get_height() - 200,
@@ -182,8 +186,22 @@ class Menu:
         background_path = os.path.join("assets", "backgrounds", "stats_bg.png")
         background = pygame.image.load(background_path).convert()
         background = pygame.transform.scale(background, self.screen.get_size())
+
         while running:
             self.screen.blit(background, (0,0))
+
+            #Particle
+            if random.random() < 0.05:
+                x = random.randint(0, self.screen.get_width())
+                y = self.screen.get_height()
+                self.particles.append(Particle(x, y))
+
+            self.particles = [p for p in self.particles if p.update()]
+            for p in self.particles:
+                p.draw(self.screen)
+
+            self.draw_player_stats_ui(player)
+
             self.draw_player_stats_ui(player)
 
             for event in pygame.event.get():
@@ -203,20 +221,25 @@ class Menu:
         return None
 
     def draw_player_stats_ui(self, player):
-        # กล่องโปร่งแสงกลางหน้าจอ
+        #Box Stat
         box_width = 600
         box_height = 420
         box_x = self.screen.get_width() // 2 - box_width // 2
         box_y = 80
         box_rect = pygame.Rect(box_x, box_y, box_width, box_height)
 
+        #Box animation
+        t = time.time()
+        float_offset = math.sin(t * 2) * 5
+        box_y += float_offset
+
         border_radius = 20
-        background_color = (30, 30, 30, 200)  # กึ่งโปร่งแสง
+        background_color = (30, 30, 30, 200)
         surface = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
         pygame.draw.rect(surface, background_color, surface.get_rect(), border_radius=border_radius)
         self.screen.blit(surface, (box_x, box_y))
 
-        # ขอบกล่อง
+        # Edge Box
         pygame.draw.rect(self.screen, (90, 90, 90), box_rect, 3, border_radius=border_radius)
 
         # Title
@@ -248,34 +271,60 @@ class Menu:
             self.screen.blit(label_text, label_rect)
             self.screen.blit(value_text, value_rect)
 
-        # ปุ่ม Continue
+        button_width = 180
+        button_height = 50
+        button_y = box_y + box_height - button_height - 14
+        spacing = 40
+
+        self.back_button = pygame.Rect(
+            self.screen.get_width() // 2 - button_width - spacing // 2,
+            button_y,
+            button_width,
+            button_height
+        )
+
+        self.next_button = pygame.Rect(
+            self.screen.get_width() // 2 + spacing // 2,
+            button_y,
+            button_width,
+            button_height
+        )
+
+        # Continue Button
         self.draw_button(
             self.next_button,
             "Continue",
-            base_color=pygame.Color("#4CAF50"),
-            hover_color=pygame.Color("#66BB6A")
+            base_color=pygame.Color("#3E8E7E"),
+            hover_color=pygame.Color("#50BFA6"),
+            text_color=pygame.Color("#F1F8E9")
         )
 
-        # ปุ่ม Back
+        # Back Button
         self.draw_button(
             self.back_button,
             "Back",
-            base_color=pygame.Color("#E64A19"),
-            hover_color=pygame.Color("#FF7043")
+            base_color=pygame.Color("#8B5E3C"),
+            hover_color=pygame.Color("#A9745B"),
+            text_color=pygame.Color("#FFF3E0")
         )
 
-    def draw_button(self, rect, text, base_color, hover_color, text_color=(255, 255, 255), border_color=(0, 0, 0),
-                    shadow=True):
+    def draw_button(self, rect, text, base_color, hover_color, text_color=(255, 255, 255),
+                    border_color=(0, 0, 0), shadow=True):
         mouse = pygame.mouse.get_pos()
         is_hovered = rect.collidepoint(mouse)
 
         if shadow:
             shadow_rect = pygame.Rect(rect.x + 4, rect.y + 4, rect.width, rect.height)
-            pygame.draw.rect(self.screen, (50, 50, 50), shadow_rect, border_radius=8)
+            pygame.draw.rect(self.screen, (40, 30, 30), shadow_rect, border_radius=8)
+
+        if is_hovered:
+            glow_color = pygame.Color("#FFD180")
+            pygame.draw.rect(self.screen, glow_color, rect.inflate(12, 12), border_radius=10)
+            pygame.draw.rect(self.screen, glow_color, rect.inflate(6, 6), 2, border_radius=10)
 
         current_color = hover_color if is_hovered else base_color
-        pygame.draw.rect(self.screen, current_color, rect, border_radius=8)
-        pygame.draw.rect(self.screen, border_color, rect, 2, border_radius=8)
+        pygame.draw.rect(self.screen, current_color, rect, border_radius=10)
+        pygame.draw.rect(self.screen, border_color, rect, 2, border_radius=10)
 
         text_surf = self.font.render(text, True, text_color)
         text_rect = text_surf.get_rect(center=rect.center)
@@ -309,3 +358,25 @@ class Menu:
             self.color_rect = self.color_active
         else:
             self.color_rect = self.color_inactive
+
+import random
+
+class Particle:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.radius = random.randint(5, 8)
+        self.alpha = random.randint(80, 180)
+        self.speed_y = random.uniform(-0.2, -0.7)
+        self.speed_x = random.uniform(-0.2, 0.2)
+
+    def update(self):
+        self.y += self.speed_y
+        self.x += self.speed_x
+        self.alpha -= 0.3  # ค่อย ๆ จาง
+        return self.alpha > 0
+
+    def draw(self, surface):
+        s = pygame.Surface((self.radius*2, self.radius*2), pygame.SRCALPHA)
+        pygame.draw.circle(s, (255, 255, 200, int(self.alpha)), (self.radius, self.radius), self.radius)
+        surface.blit(s, (self.x, self.y))
