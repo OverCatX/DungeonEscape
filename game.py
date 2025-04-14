@@ -3,7 +3,7 @@ import sys
 import pygame
 from DungeonEscape.config import Config
 from DungeonEscape.db.player_data import PlayerDB
-from DungeonEscape.entities.Player import Player
+from DungeonEscape.entities.player import Player
 from DungeonEscape.ui.menu import Menu
 
 class Game:
@@ -35,18 +35,18 @@ class Game:
         if result == 'exit':
             self.running = False
         else:
-            self.game_data['state'] = 'select_mode'
+            self.game_data['state'] = 'player_progress'
             self.player = PlayerDB().player_login(result)
             # print(self.player.name)
 
-    def select_mode(self):
-        result = self.menu.select_mode(self.player.name)
-        if result == 'back':
+    def player_progress(self):
+        result = self.menu.show_player_stats(self.player)
+        if result == 'continue':
+            self.game_data['state'] = 'on_game'
+        elif result == 'back':
             self.game_data['state'] = 'home'
-        elif result == 'progressive':
-            self.game_data['state'] = 'progressive'
 
-    def on_game_progressive(self):
+    def on_game(self):
         while self.running:
             dt = self.clock.tick(Config.FPS) / 1000
             for event in pygame.event.get():
@@ -65,9 +65,9 @@ class Game:
         while self.running:
             if self.game_data['state'] == 'home':
                 self.home_screen()
-            elif self.game_data['state'] == 'select_mode':
-                self.select_mode()
-            elif self.game_data['state'] == 'progressive':
-                self.on_game_progressive()
+            elif self.game_data['state'] == 'player_progress':
+                self.player_progress()
+            elif self.game_data['state'] == 'on_game':
+                self.on_game()
 game = Game()
 game.run()
