@@ -19,6 +19,7 @@ class Menu:
         screen_width, screen_height = self.screen.get_size()
 
         #Home UI
+        self.sparkles = []
         input_box_width = 400
         input_box_height = 40
         input_x = screen_width // 2 - input_box_width // 2
@@ -59,6 +60,16 @@ class Menu:
         background = pygame.transform.scale(background, self.screen.get_size())
         while running:
             self.screen.blit(background, (0, 0))
+
+            #Particle
+            if random.random() < 0.1:
+                sparkle_x = random.randint(0, self.screen.get_width())
+                sparkle_y = self.screen.get_height() - 50
+                self.sparkles.append(SparkleParticle(sparkle_x, sparkle_y))
+
+            self.sparkles = [s for s in self.sparkles if s.update()]
+            for sparkle in self.sparkles:
+                sparkle.draw(self.screen)
             self.draw_home_buttons()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -223,7 +234,7 @@ class Menu:
     def draw_player_stats_ui(self, player):
         #Box Stat
         box_width = 600
-        box_height = 420
+        box_height = 450
         box_x = self.screen.get_width() // 2 - box_width // 2
         box_y = 80
         box_rect = pygame.Rect(box_x, box_y, box_width, box_height)
@@ -273,7 +284,7 @@ class Menu:
 
         button_width = 180
         button_height = 50
-        button_y = box_y + box_height - button_height - 14
+        button_y = box_y + box_height - button_height - 20
         spacing = 40
 
         self.back_button = pygame.Rect(
@@ -379,4 +390,25 @@ class Particle:
     def draw(self, surface):
         s = pygame.Surface((self.radius*2, self.radius*2), pygame.SRCALPHA)
         pygame.draw.circle(s, (255, 255, 200, int(self.alpha)), (self.radius, self.radius), self.radius)
+        surface.blit(s, (self.x, self.y))
+
+class SparkleParticle:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.radius = random.randint(2, 4)
+        self.alpha = random.randint(120, 200)
+        self.speed_y = random.uniform(-0.3, -0.6)
+        self.speed_x = random.uniform(-0.2, 0.2)
+        self.color = (255, 255, random.randint(180, 220), self.alpha)
+
+    def update(self):
+        self.x += self.speed_x
+        self.y += self.speed_y
+        self.alpha -= 0.6
+        return self.alpha > 0
+
+    def draw(self, surface):
+        s = pygame.Surface((self.radius*2, self.radius*2), pygame.SRCALPHA)
+        pygame.draw.circle(s, self.color, (self.radius, self.radius), self.radius)
         surface.blit(s, (self.x, self.y))
