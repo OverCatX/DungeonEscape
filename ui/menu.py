@@ -179,9 +179,11 @@ class Menu:
     def show_player_stats(self, player):
         clock = pygame.time.Clock()
         running = True
-
+        background_path = os.path.join("assets", "backgrounds", "stats_bg.png")
+        background = pygame.image.load(background_path).convert()
+        background = pygame.transform.scale(background, self.screen.get_size())
         while running:
-            self.screen.fill(Config.COLORS['white'])
+            self.screen.blit(background, (0,0))
             self.draw_player_stats_ui(player)
 
             for event in pygame.event.get():
@@ -201,44 +203,64 @@ class Menu:
         return None
 
     def draw_player_stats_ui(self, player):
+        # กล่องโปร่งแสงกลางหน้าจอ
+        box_width = 600
+        box_height = 420
+        box_x = self.screen.get_width() // 2 - box_width // 2
+        box_y = 80
+        box_rect = pygame.Rect(box_x, box_y, box_width, box_height)
+
+        border_radius = 20
+        background_color = (30, 30, 30, 200)  # กึ่งโปร่งแสง
+        surface = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
+        pygame.draw.rect(surface, background_color, surface.get_rect(), border_radius=border_radius)
+        self.screen.blit(surface, (box_x, box_y))
+
+        # ขอบกล่อง
+        pygame.draw.rect(self.screen, (90, 90, 90), box_rect, 3, border_radius=border_radius)
+
         # Title
-        title = self.font.render("Player Stats", True, Config.COLORS['black'])
-        title_rect = title.get_rect(center=(self.screen.get_width() // 2, 50))
+        title_font = pygame.font.Font(os.path.join("assets", "fonts", "Balthazar.ttf"), 64)
+        title = title_font.render("Player Stats", True, pygame.Color("#FFD700"))  # ทองเรืองแสง
+        title_rect = title.get_rect(center=(self.screen.get_width() // 2, box_y + 40))
         self.screen.blit(title, title_rect)
 
+        # Info list
+        stats_font = pygame.font.Font(None, 36)
         info = [
             ("Username", player.name),
             ("MaxState", player.max_state),
-            ("TimePlayed", player.time_played),
-            ("EnemiesDefeated", player.enemies_defeated),
-            ("ItemsCollected", player.items_collected)
+            ("Time Played", player.time_played),
+            ("Enemies Defeated", player.enemies_defeated),
+            ("Items Collected", player.items_collected)
         ]
 
-        start_y = 130
-        gap = 60
+        start_y = title_rect.bottom + 20
+        gap = 55
 
         for i, (label, value) in enumerate(info):
-            label_text = self.font.render(f"{label}:", True, Config.COLORS['black'])
-            value_text = self.font.render(str(value), True, pygame.Color("#0097A7"))
+            label_text = stats_font.render(f"{label}:", True, pygame.Color("#CCCCCC"))
+            value_text = stats_font.render(str(value), True, pygame.Color("#00B8D4"))
 
-            label_rect = label_text.get_rect(topleft=(400, start_y + i * gap))
-            value_rect = value_text.get_rect(topright=(880, start_y + i * gap))
+            label_rect = label_text.get_rect(topleft=(box_x + 40, start_y + i * gap))
+            value_rect = value_text.get_rect(topright=(box_x + box_width - 40, start_y + i * gap))
 
             self.screen.blit(label_text, label_rect)
             self.screen.blit(value_text, value_rect)
 
-        #Continue Button
+        # ปุ่ม Continue
         self.draw_button(
             self.next_button,
             "Continue",
             base_color=pygame.Color("#4CAF50"),
             hover_color=pygame.Color("#66BB6A")
         )
-        #Back Button
+
+        # ปุ่ม Back
         self.draw_button(
             self.back_button,
             "Back",
-            base_color=pygame.Color("#FF5722"),
+            base_color=pygame.Color("#E64A19"),
             hover_color=pygame.Color("#FF7043")
         )
 
