@@ -1,3 +1,5 @@
+from random import random, randint
+
 import pygame
 from DungeonEscape.entities.entity import Entity
 
@@ -10,21 +12,24 @@ class Player(Entity):
         self.health = health
         self.armor = armor
         self.current_stage = current_stage
+        self.alive = True
+
+        # Speed
         self.speed = 2
-        self.normal_speed = 2.5
+        self.normal_speed = 2
         self.dash_speed = 3
 
         # Trap system
-        self.trap_cooldown = 1000  # milliseconds
+        self.trap_cooldown = 1000  # ms
         self.last_trap_hit_time = 0
 
         # Energy system
         self.max_energy = 100
         self.energy = 100
-        self.energy_decrease_rate = 10
-        self.energy_recover_rate = 5
+        self.energy_decrease_rate = 30
+        self.energy_recover_rate = 3
 
-        # Hit flash (flicker effect)
+        # Hurt flash effect
         self.hit_flash = False
         self.hit_flash_timer = 0
         self.hit_flash_duration = 500  # ms
@@ -52,10 +57,10 @@ class Player(Entity):
 
         super().update(dt)
 
-        # Flicker effect while hit
+        # Flicker effect while hurt
         if self.hit_flash:
-            current_time = pygame.time.get_ticks()
-            elapsed = current_time - self.hit_flash_timer
+            now = pygame.time.get_ticks()
+            elapsed = now - self.hit_flash_timer
             if elapsed >= self.hit_flash_duration:
                 self.hit_flash = False
                 self.image.set_alpha(255)
@@ -104,21 +109,22 @@ class Player(Entity):
                     self.rect.top = tile.rect.bottom
 
     def take_damage(self, amount):
-        self.health -= amount
-        if self.health <= 0:
-            self.die()
+        now = pygame.time.get_ticks()
+        if now - self.last_trap_hit_time >= self.trap_cooldown:
+            self.health -= amount
+            self.last_trap_hit_time = now
+            self.hit_flash = True
+            self.hit_flash_timer = now
+            print(f"[Trap] {self.name} took damage: {amount}, HP = {self.health}")
+            if self.health <= 0:
+                self.die()
 
     def trigger_trap(self):
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_trap_hit_time >= self.trap_cooldown:
-            self.take_damage(10)
-            self.last_trap_hit_time = current_time
-            self.hit_flash = True
-            self.hit_flash_timer = current_time
-            print(f"[Trap] {self.name} stepped on trap! HP = {self.health}")
+        self.take_damage(randint(6,10))
 
     def die(self):
         print(f"{self.name} has died.")
+        self.alive = False
 
     def update_max_state(self, max_state):
         self.max_state = max_state

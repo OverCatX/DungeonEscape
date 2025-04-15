@@ -1,5 +1,7 @@
 # DungeonEscape/game.py
 import sys
+from random import random, randint, randrange
+
 import pygame
 from DungeonEscape.config import Config
 from DungeonEscape.db.player_data import PlayerDB
@@ -23,6 +25,7 @@ class Game:
             'state': 'home',
             'mode': None
         }
+        self.last_game_surface = None
         self.running = False
 
         self.player = Player()
@@ -79,25 +82,18 @@ class Game:
         player_placed = False
 
         for y, row in enumerate(map_data):
-            for x, val in enumerate(row):
-                if val == 1:
-                    tile_type = 'wall'
-                elif val == 2:
-                    tile_type = 'trap'
-                elif val == 5:
-                    tile_type = 'exit'
-                else:
-                    tile_type = 'floor'
-
+            for x, tile_type in enumerate(row):
                 tile = Tile(x, y, tile_type)
                 self.tile_group.add(tile)
 
-                if val == 4:
+                if tile_type == 'player':
                     self.player.rect.topleft = (x * tile_size, y * tile_size)
                     self.player.move_x = 0
                     self.player.move_y = 0
                     self.player_group.add(self.player)
                     player_placed = True
+                elif tile_type == 'enemy':
+                    self.enemies.append((x, y))
 
         if not player_placed:
             print("[WARNING] Player not placed on map! Defaulting to (0,0)")
@@ -160,13 +156,20 @@ class Game:
 
             # --- Trap check ---
             for tile in self.tile_group:
-                if tile.tile_type == "trap":
+                if tile.tile_type in ["spike", "poison", "timed_spike"]:
                     trap_check_rect = self.player.rect.inflate(-20, -40)
                     if trap_check_rect.colliderect(tile.rect):
-                        self.player.trigger_trap()
+                        if tile.tile_type == "timed_spike" and not getattr(tile, 'active', True):
+                            continue
+                        self.player.take_damage(getattr(tile, 'damage', 10))
                         break
 
             pygame.display.flip()
+
+            if not self.player.alive:
+                self.last_game_surface = self.screen.copy()
+                self.menu.show_game_over_screen(self)
+                return
 
             if exit_rect and self.player.rect.colliderect(exit_rect):
                 print("Player reached exit!")
