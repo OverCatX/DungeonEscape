@@ -1,22 +1,21 @@
 import pygame
-
-from DungeonEscape.entities.Entity import Entity
-
+from DungeonEscape.entities.entity import Entity
 
 class Player(Entity):
     def __init__(self, x=0, y=0, health=100, armor=0, name="Player",
-                 time_played=0, enemies_defeated=0, items_collected=0, max_state=0):
+                 time_played=0, enemies_defeated=0, items_collected=0, max_state=0, current_stage=1):
         super().__init__(asset_folder='player' ,x=x, y=y)
         self.name = name
         self.health = health
         self.armor = armor
         self.speed = 3
 
-        #Player Stats
+        # Player Stats
         self.time_played = time_played
         self.enemies_defeated = enemies_defeated
         self.items_collected = items_collected
         self.max_state = max_state
+        self.current_stage = current_stage
 
     def update(self, dt):
         super().update(dt)
@@ -38,8 +37,6 @@ class Player(Entity):
 
         if keys[pygame.K_SPACE]:
             self.attack()
-
-        # print(self.move_x, self.move_y)
 
     def take_damage(self, amount):
         self.health -= amount
@@ -65,5 +62,11 @@ class Player(Entity):
         self.items_collected = items_collected
         print(f'Updated {self.name} ItemsCollected to {self.items_collected}')
 
+    def on_stage_complete(self):
+        self.current_stage += 1
+        if self.current_stage > self.max_state:
+            self.max_state = self.current_stage
+        print(f"{self.name} progressed to Stage {self.current_stage}")
+
     def __str__(self):
-        return f'Player: {self.name}, MaxState: {self.max_state}, TimePlayed: {self.time_played}, EnemiesDefeated: {self.enemies_defeated}, ItemsCollected: {self.items_collected}'
+        return f'Player: {self.name}, MaxState: {self.max_state}, CurrentStage: {self.current_stage}, TimePlayed: {self.time_played}, EnemiesDefeated: {self.enemies_defeated}, ItemsCollected: {self.items_collected}'
