@@ -25,25 +25,41 @@ class Entity(pygame.sprite.Sprite):
 
     def load_images(self):
         base_path = join('assets', self.asset_folder)
+        scale = self.scale_size
 
-        images = {'up': [pygame.transform.scale(pygame.image.load(join(base_path, 'up', f'{i}.png')).convert_alpha(),
-                                                self.scale_size) for i in range(4)], 'down': [
-            pygame.transform.scale(pygame.image.load(join(base_path, 'down', f'{i}.png')).convert_alpha(),
-                                   self.scale_size) for i in range(4)], 'left': [
-            pygame.transform.scale(pygame.image.load(join(base_path, 'left', f'{i}.png')).convert_alpha(),
-                                   self.scale_size) for i in range(4)], 'right': [
-            pygame.transform.scale(pygame.image.load(join(base_path, 'right', f'{i}.png')).convert_alpha(),
-                                   self.scale_size) for i in range(4)], 'attack': {
-            'up': pygame.transform.scale(pygame.image.load(join(base_path, 'attack', 'up.png')).convert_alpha(),
-                                         self.scale_size),
+        # Load move animations
+        move = {
+            'up': [pygame.transform.scale(pygame.image.load(join(base_path, 'move', 'up', f'{i}.png')).convert_alpha(),
+                                          scale) for i in range(4)],
+            'down': [
+                pygame.transform.scale(pygame.image.load(join(base_path, 'move', 'down', f'{i}.png')).convert_alpha(),
+                                       scale) for i in range(4)],
+            'left': [
+                pygame.transform.scale(pygame.image.load(join(base_path, 'move', 'left', f'{i}.png')).convert_alpha(),
+                                       scale) for i in range(4)],
+            'right': [
+                pygame.transform.scale(pygame.image.load(join(base_path, 'move', 'right', f'{i}.png')).convert_alpha(),
+                                       scale) for i in range(4)],
+        }
+
+        # Load attack images
+        attack = {
+            'up': pygame.transform.scale(pygame.image.load(join(base_path, 'attack', 'up.png')).convert_alpha(), scale),
             'down': pygame.transform.scale(pygame.image.load(join(base_path, 'attack', 'down.png')).convert_alpha(),
-                                           self.scale_size),
+                                           scale),
             'left': pygame.transform.scale(pygame.image.load(join(base_path, 'attack', 'left.png')).convert_alpha(),
-                                           self.scale_size),
+                                           scale),
             'right': pygame.transform.scale(pygame.image.load(join(base_path, 'attack', 'right.png')).convert_alpha(),
-                                            self.scale_size),
-        }}
-        return images
+                                            scale),
+        }
+
+        return {
+            'up': move['up'],
+            'down': move['down'],
+            'left': move['left'],
+            'right': move['right'],
+            'attack': attack
+        }
 
     def attack(self):
         if not self.attack_animation:
@@ -51,19 +67,18 @@ class Entity(pygame.sprite.Sprite):
             self.attack_timer = 0
 
     def update(self, dt):
-        self.rect.x += self.move_x
-        self.rect.y += self.move_y
         self.time_passed += dt
 
+        # Attack animation
         if self.attack_animation:
             self.attack_timer += dt
             self.image = self.images['attack'][self.direction]
-
             if self.attack_timer >= self.attack_duration:
                 self.attack_animation = False
                 self.attack_timer = 0
             return
 
+        # Movement direction
         if self.move_y < 0:
             self.direction = 'up'
         elif self.move_y > 0:
@@ -73,6 +88,7 @@ class Entity(pygame.sprite.Sprite):
         elif self.move_x > 0:
             self.direction = 'right'
 
+        # Walk animation
         if self.move_x != 0 or self.move_y != 0:
             if self.time_passed >= self.animation_speed:
                 self.current_sprite = (self.current_sprite + 1) % 4
