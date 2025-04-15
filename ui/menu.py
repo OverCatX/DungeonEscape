@@ -232,34 +232,33 @@ class Menu:
         return None
 
     def draw_player_stats_ui(self, player):
-        #Box Stat
         box_width = 600
-        box_height = 450
+        box_height = 500
         box_x = self.screen.get_width() // 2 - box_width // 2
         box_y = 80
-        box_rect = pygame.Rect(box_x, box_y, box_width, box_height)
 
-        #Box animation
+        # กล่อง animation
         t = time.time()
         float_offset = math.sin(t * 2) * 5
-        box_y += float_offset
+        animated_box_y = box_y + float_offset
 
         border_radius = 20
         background_color = (30, 30, 30, 200)
         surface = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
         pygame.draw.rect(surface, background_color, surface.get_rect(), border_radius=border_radius)
-        self.screen.blit(surface, (box_x, box_y))
+        self.screen.blit(surface, (box_x, animated_box_y))
 
-        # Edge Box
+        # กล่องขอบ
+        box_rect = pygame.Rect(box_x, animated_box_y, box_width, box_height)
         pygame.draw.rect(self.screen, (90, 90, 90), box_rect, 3, border_radius=border_radius)
 
-        # Title
+        # หัวข้อ
         title_font = pygame.font.Font(os.path.join("assets", "fonts", "Balthazar.ttf"), 64)
-        title = title_font.render("Player Stats", True, pygame.Color("#FFD700"))  # ทองเรืองแสง
-        title_rect = title.get_rect(center=(self.screen.get_width() // 2, box_y + 40))
+        title = title_font.render("Player Stats", True, pygame.Color("#FFD700"))
+        title_rect = title.get_rect(center=(self.screen.get_width() // 2, animated_box_y + 40))
         self.screen.blit(title, title_rect)
 
-        # Info list
+        # ข้อมูล
         stats_font = pygame.font.Font(None, 36)
         info = [
             ("Username", player.name),
@@ -282,10 +281,13 @@ class Menu:
             self.screen.blit(label_text, label_rect)
             self.screen.blit(value_text, value_rect)
 
+        # ปุ่มแบบลอย
         button_width = 180
         button_height = 50
-        button_y = box_y + box_height - button_height - 20
         spacing = 40
+
+        button_y = animated_box_y + box_height - button_height - 70
+        leaderboard_button_y = animated_box_y + box_height - button_height - 10
 
         self.back_button = pygame.Rect(
             self.screen.get_width() // 2 - button_width - spacing // 2,
@@ -301,7 +303,14 @@ class Menu:
             button_height
         )
 
-        # Continue Button
+        self.leaderboard_button = pygame.Rect(
+            self.screen.get_width() // 2 - button_width // 2,
+            leaderboard_button_y,
+            button_width,
+            button_height
+        )
+
+        # วาดปุ่ม
         self.draw_button(
             self.next_button,
             "Continue",
@@ -310,7 +319,6 @@ class Menu:
             text_color=pygame.Color("#F1F8E9")
         )
 
-        # Back Button
         self.draw_button(
             self.back_button,
             "Back",
@@ -318,6 +326,135 @@ class Menu:
             hover_color=pygame.Color("#A9745B"),
             text_color=pygame.Color("#FFF3E0")
         )
+
+        self.draw_button(
+            self.leaderboard_button,
+            "Leaderboard",
+            base_color=pygame.Color("#3949AB"),
+            hover_color=pygame.Color("#5C6BC0"),
+            text_color=pygame.Color("#E8EAF6")
+        )
+
+    def game_selection_screen(self):
+        clock = pygame.time.Clock()
+        running = True
+
+        background = pygame.image.load(os.path.join("assets", "backgrounds", "selection_bg.png")).convert()
+        background = pygame.transform.scale(background, self.screen.get_size())
+
+        title_font = pygame.font.Font(os.path.join("assets", "fonts", "Balthazar.ttf"), 72)
+        base_title_y = 100
+
+        modes = [("Hardcore Endless", "#6A1B1A", "#C62828"), ("Stage Mode", "#1B5E20", "#43A047")]
+        buttons = []
+        button_w, button_h = 360, 70
+        spacing = 100
+        center_x = self.screen.get_width() // 2 - button_w // 2
+        start_y = 220
+
+        for i, (label, base_col, hover_col) in enumerate(modes):
+            rect = pygame.Rect(center_x, start_y + i * spacing, button_w, button_h)
+            buttons.append((label, rect, pygame.Color(base_col), pygame.Color(hover_col)))
+
+        back_button = pygame.Rect(center_x, start_y + len(modes) * spacing + 20, button_w, button_h)
+        sparkles = []
+
+        while running:
+            self.screen.blit(background, (0, 0))
+
+            if random.random() < 0.08:
+                sparkles.append(SparkleParticle(
+                    random.randint(0, self.screen.get_width()),
+                    random.randint(self.screen.get_height() - 150, self.screen.get_height())
+                ))
+            sparkles = [s for s in sparkles if s.update()]
+            for sparkle in sparkles:
+                sparkle.draw(self.screen)
+
+            t = pygame.time.get_ticks() / 1000
+            float_y = math.sin(t * 2) * 10
+            title = title_font.render("Select Your Challenge", True, pygame.Color("#FFD700"))
+            title_rect = title.get_rect(center=(self.screen.get_width() // 2, base_title_y + float_y))
+            self.screen.blit(title, title_rect)
+
+            mouse = pygame.mouse.get_pos()
+
+            for label, rect, base_color, hover_color in buttons:
+                self.draw_dungeon_magic_button(
+                    rect, label,
+                    base_color=base_color,
+                    hover_color=hover_color
+                )
+
+            self.draw_dungeon_magic_button(
+                back_button, "Back",
+                base_color=pygame.Color("#4E342E"),
+                hover_color=pygame.Color("#6D4C41")
+            )
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    for label, rect, _, _ in buttons:
+                        if rect.collidepoint(event.pos):
+                            return label
+                    if back_button.collidepoint(event.pos):
+                        return "back"
+
+            pygame.display.flip()
+            clock.tick(60)
+
+    def draw_dungeon_magic_button(self, rect, text, base_color, hover_color, text_color=(255, 255, 255)):
+        mouse = pygame.mouse.get_pos()
+        is_hovered = rect.collidepoint(mouse)
+
+        t = pygame.time.get_ticks() / 1000
+        float_offset = math.sin(t * 2 + rect.y * 0.01) * 4
+        glow_strength = int((math.sin(t * 3 + rect.x) + 1) * 50 + 80)
+        pulse_color = (255, 160, 60, glow_strength)
+
+        floating_rect = rect.copy()
+        floating_rect.y += float_offset
+
+        border_radius = 12
+        shadow_rect = floating_rect.copy()
+        shadow_rect.y += 6
+        pygame.draw.rect(self.screen, (10, 5, 5), shadow_rect, border_radius=border_radius)
+
+        if is_hovered:
+            aura = pygame.Surface((floating_rect.width + 20, floating_rect.height + 20), pygame.SRCALPHA)
+            pygame.draw.rect(aura, pulse_color, aura.get_rect(), border_radius=border_radius)
+            self.screen.blit(aura, (floating_rect.x - 10, floating_rect.y - 10))
+
+        if is_hovered:
+            angle = (t * 90) % 360
+            circle_surf = pygame.Surface((floating_rect.width + 30, floating_rect.height + 30), pygame.SRCALPHA)
+            pygame.draw.ellipse(circle_surf, (180, 100, 255, 60), circle_surf.get_rect(), 3)
+            circle_rotated = pygame.transform.rotate(circle_surf, angle)
+            circle_rect = circle_rotated.get_rect(center=floating_rect.center)
+            self.screen.blit(circle_rotated, circle_rect)
+
+        pygame.draw.rect(self.screen, base_color, floating_rect, border_radius=border_radius)
+        pygame.draw.rect(self.screen, (70, 50, 30), floating_rect, 2, border_radius=border_radius)
+
+        rune_layer = pygame.Surface((floating_rect.width, floating_rect.height), pygame.SRCALPHA)
+        for _ in range(6):
+            rx = random.randint(10, floating_rect.width - 10)
+            ry = random.randint(10, floating_rect.height - 10)
+            alpha = random.randint(20, 50)
+            pygame.draw.circle(rune_layer, (180, 180, 255, alpha), (rx, ry), 2)
+        self.screen.blit(rune_layer, floating_rect.topleft)
+
+        text_surface = self.font.render(text, True, text_color)
+        text_shadow = self.font.render(text, True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=floating_rect.center)
+        shadow_rect = text_rect.copy()
+        shadow_rect.x += 2
+        shadow_rect.y += 2
+        self.screen.blit(text_shadow, shadow_rect)
+        self.screen.blit(text_surface, text_rect)
 
     def draw_button(self, rect, text, base_color, hover_color, text_color=(255, 255, 255),
                     border_color=(0, 0, 0), shadow=True):
