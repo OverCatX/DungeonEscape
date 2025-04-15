@@ -15,7 +15,9 @@ class RandomMapGenerator:
         self.map[1][1] = "player"
 
         # place exit
-        self.map[self.height - 2][self.width - 2] = "exit"
+        y = random.randint(1, self.height - 2)
+        if self.map[y][self.width - 2] == "floor":
+            self.map[y][self.width - 2] = "exit"
 
         # place random traps
         for _ in range(10):
