@@ -5,7 +5,7 @@ from DungeonEscape.entities.entity import Entity
 class Player(Entity):
     def __init__(self, x=0, y=0, health=100, armor=0, name="Player",
                  time_played=0, enemies_defeated=0, items_collected=0, max_state=0,
-                 current_stage=0):
+                 current_stage=1):
         super().__init__(asset_folder='player', x=x, y=y)
         self.name = name
         self.health = health
@@ -131,7 +131,7 @@ class Player(Entity):
             self.die()
 
     def trigger_trap(self, damage):
-        self.take_trap_damage(randint(6, damage))
+        self.take_trap_damage(randint(3, damage))
 
     def die(self):
         print(f"{self.name} has died.")

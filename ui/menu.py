@@ -406,6 +406,71 @@ class Menu:
             pygame.display.flip()
             clock.tick(60)
 
+    def show_game_over_screen(self, game):
+        clock = pygame.time.Clock()
+        font = pygame.font.Font(None, 64)
+        small_font = pygame.font.Font(None, 36)
+        button_font = pygame.font.Font(None, 32)
+
+        restart_button = pygame.Rect(self.screen.get_width() // 2 - 100, 400, 200, 50)
+        home_button = pygame.Rect(self.screen.get_width() // 2 - 100, 470, 200, 50)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if restart_button.collidepoint(event.pos):
+                        game.player = game.player.__class__(name=game.player.name,current_stage=game.player.current_stage)
+                        game.player_group = pygame.sprite.Group(game.player)
+                        game.game_data['state'] = 'on_game'
+                        return
+                    elif home_button.collidepoint(event.pos):
+                        game.game_data['state'] = 'home'
+                        return
+
+            if game.last_game_surface:
+                self.screen.blit(game.last_game_surface, (0, 0))
+                overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+                overlay.fill((0, 0, 0, 180))
+                self.screen.blit(overlay, (0, 0))
+
+            game_over_text = font.render("Game Over", True, (255, 0, 0))
+            self.screen.blit(game_over_text, (self.screen.get_width() // 2 - game_over_text.get_width() // 2, 200))
+
+            # Colors
+            restart_bg = pygame.Color("#8B0000")  # deep blood red
+            restart_hover = pygame.Color("#A00000")
+            home_bg = pygame.Color("#4B3621")  # dark stone brown
+            home_hover = pygame.Color("#5A4030")
+            border_color = pygame.Color("#FFD700")  # gold
+            text_color = pygame.Color("#FFFFFF")
+
+            # Hover effect
+            mouse = pygame.mouse.get_pos()
+            restart_is_hovered = restart_button.collidepoint(mouse)
+            home_is_hovered = home_button.collidepoint(mouse)
+
+            # Draw Restart Button
+            pygame.draw.rect(self.screen, restart_hover if restart_is_hovered else restart_bg, restart_button,
+                             border_radius=10)
+            pygame.draw.rect(self.screen, border_color, restart_button, 2, border_radius=10)
+
+            # Draw Home Button
+            pygame.draw.rect(self.screen, home_hover if home_is_hovered else home_bg, home_button, border_radius=10)
+            pygame.draw.rect(self.screen, border_color, home_button, 2, border_radius=10)
+
+            # Text
+            restart_text = button_font.render("Restart", True, text_color)
+            home_text = button_font.render("Home", True, text_color)
+
+            self.screen.blit(restart_text, restart_text.get_rect(center=restart_button.center))
+            self.screen.blit(home_text, home_text.get_rect(center=home_button.center))
+
+            pygame.display.flip()
+            clock.tick(60)
+
     def draw_dungeon_magic_button(self, rect, text, base_color, hover_color, text_color=(255, 255, 255)):
         mouse = pygame.mouse.get_pos()
         is_hovered = rect.collidepoint(mouse)
