@@ -1,6 +1,5 @@
 # DungeonEscape/game.py
 import sys
-from random import random, randint, randrange
 
 import pygame
 from DungeonEscape.config import Config
@@ -8,6 +7,7 @@ from DungeonEscape.db.player_data import PlayerDB
 from DungeonEscape.entities.player import Player
 from DungeonEscape.entities.tile import Tile
 from DungeonEscape.map.random_map_generator import RandomMapGenerator
+from DungeonEscape.ui.hud import Hud
 from DungeonEscape.ui.menu import Menu
 
 class Game:
@@ -153,6 +153,10 @@ class Game:
             en_text = hud_font.render(f"EN: {int(self.player.energy)}", True, (255, 255, 255))
             self.screen.blit(hp_text, (bar_x + bar_width + 10, bar_y))
             self.screen.blit(en_text, (bar_x + bar_width + 10, bar_y + spacing_y))
+
+            #Show HUD
+            hud = Hud(self.screen, self.player)
+            hud.draw()
 
             # --- Trap check ---
             for tile in self.tile_group:
