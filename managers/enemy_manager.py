@@ -8,7 +8,7 @@ def get_enemies_for_stage(stage: int, positions: list, wave: int = 1):
 
     base_hp = 40 + (stage - 1) * 10 + (wave - 1) * 5
     base_dmg = 10 + (stage - 1) * 2 + (wave - 1) * 1
-    base_speed = 1.2 + (stage - 1) * 0.1 + (wave - 1) * 0.05
+    base_speed = 1 + (stage - 1) * 0.1 + (wave - 1) * 0.05
 
     count = min(2 + wave + stage, len(positions))
 

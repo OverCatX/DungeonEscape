@@ -39,7 +39,6 @@ class Game:
         self.player_group = pygame.sprite.Group()
         self.enemy_group = pygame.sprite.Group()
 
-        # Wave System
         self.wave_number = 1
         self.total_waves = 3
         self.wave_enemies_remaining = 0
@@ -114,10 +113,11 @@ class Game:
 
     def start_stage_mode(self):
         self.load_stage(self.player.current_stage)
-
-        #Wave
         self.wave_number = 1
         self.total_waves = min(3 + self.player.current_stage // 2, 10)
+
+        #Hud
+        hud = Hud(self.screen, self.player)
 
         def prepare_wave(wave):
             self.enemy_group.empty()
@@ -141,6 +141,25 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                hud.handle_event(event)
+
+            if hud.is_paused:
+                continue_btn, exit_btn = hud.show_pause_menu()
+                pygame.display.flip()
+
+                while hud.is_paused:
+                    for pause_event in pygame.event.get():
+                        if pause_event.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
+                        elif pause_event.type == pygame.MOUSEBUTTONDOWN:
+                            if continue_btn.collidepoint(pause_event.pos):
+                                hud.is_paused = False
+                            elif exit_btn.collidepoint(pause_event.pos):
+                                self.game_data['state'] = 'home'
+                                return
+                    self.clock.tick(60)
+                continue
 
             self.screen.fill((20, 20, 20))
             self.tile_group.update(dt)
@@ -158,10 +177,7 @@ class Game:
 
             self.enemy_group.draw(self.screen)
 
-            # Show HUD
-            hud = Hud(self.screen, self.player, self.wave_number, self.total_waves)
-            hud.update_wave_info(self.wave_number, self.total_waves)
-            hud.draw()
+            hud.draw(wave_number=self.wave_number, total_waves=self.total_waves)
 
             for tile in self.tile_group:
                 if tile.tile_type in ["spike", "poison", "timed_spike"]:

@@ -248,17 +248,17 @@ class Menu:
         pygame.draw.rect(surface, background_color, surface.get_rect(), border_radius=border_radius)
         self.screen.blit(surface, (box_x, animated_box_y))
 
-        # กล่องขอบ
+        # Edge
         box_rect = pygame.Rect(box_x, animated_box_y, box_width, box_height)
         pygame.draw.rect(self.screen, (90, 90, 90), box_rect, 3, border_radius=border_radius)
 
-        # หัวข้อ
+        # Title
         title_font = pygame.font.Font(os.path.join("assets", "fonts", "Balthazar.ttf"), 64)
         title = title_font.render("Player Stats", True, pygame.Color("#FFD700"))
         title_rect = title.get_rect(center=(self.screen.get_width() // 2, animated_box_y + 40))
         self.screen.blit(title, title_rect)
 
-        # ข้อมูล
+        # Data
         stats_font = pygame.font.Font(None, 36)
         info = [
             ("Username", player.name),
@@ -345,7 +345,7 @@ class Menu:
         title_font = pygame.font.Font(os.path.join("assets", "fonts", "Balthazar.ttf"), 72)
         base_title_y = 100
 
-        modes = [("Hardcore Endless", "#6A1B1A", "#C62828"), ("Stage Mode", "#1B5E20", "#43A047")]
+        modes = [("Stage Mode", "#1B5E20", "#43A047"), ("Hardcore Endless", "#6A1B1A", "#C62828")]
         buttons = []
         button_w, button_h = 360, 70
         spacing = 100
