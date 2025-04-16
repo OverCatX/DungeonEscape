@@ -6,7 +6,7 @@ class RandomMapGenerator:
         self.height = height
         self.map = [["wall" for _ in range(width)] for _ in range(height)]
 
-    def generate(self):
+    def generate(self, enemy_count=3):
         for y in range(1, self.height - 1):
             for x in range(1, self.width - 1):
                 self.map[y][x] = "floor"
@@ -20,7 +20,7 @@ class RandomMapGenerator:
             self.map[y][self.width - 2] = "exit"
 
         # place random traps
-        for _ in range(10):
+        for _ in range(20):
             while True:
                 x, y = random.randint(1, self.width - 2), random.randint(1, self.height - 2)
                 if self.map[y][x] == "floor":
@@ -29,11 +29,14 @@ class RandomMapGenerator:
                     break
 
         # place random enemies
-        for _ in range(3):
-            while True:
+        for _ in range(enemy_count):
+            placed = False
+            for _ in range(100):  # ลอง 100 ครั้ง
                 x, y = random.randint(1, self.width - 2), random.randint(1, self.height - 2)
-                if self.map[y][x] == "floor":
-                    self.map[y][x] = "enemy"
+                if self.map[y][x] == 'floor':
+                    self.map[y][x] = 'enemy'
+                    placed = True
                     break
-
-        return self.map
+            if not placed:
+                print("[Warning] Failed to place enemy after 100 tries.")
+            return self.map

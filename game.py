@@ -1,12 +1,13 @@
-# DungeonEscape/game.py
 import sys
-
 import pygame
+import random
+
 from DungeonEscape.config import Config
 from DungeonEscape.db.player_data import PlayerDB
 from DungeonEscape.entities.player import Player
 from DungeonEscape.entities.tile import Tile
 from DungeonEscape.map.random_map_generator import RandomMapGenerator
+from DungeonEscape.managers.enemy_manager import get_enemies_for_stage
 from DungeonEscape.ui.hud import Hud
 from DungeonEscape.ui.menu import Menu
 
@@ -36,6 +37,12 @@ class Game:
 
         self.tile_group = pygame.sprite.Group()
         self.player_group = pygame.sprite.Group()
+        self.enemy_group = pygame.sprite.Group()
+
+        # Wave System
+        self.wave_number = 1
+        self.total_waves = 3
+        self.wave_enemies_remaining = 0
 
     def home_screen(self):
         result = self.menu.home_screen()
@@ -61,8 +68,6 @@ class Game:
             self.game_data['state'] = 'on_game'
 
     def on_game(self):
-        print(f"Starting game in mode: {self.game_data['mode']}")
-
         if self.game_data['mode'] == 'Stage Mode':
             self.start_stage_mode()
         elif self.game_data['mode'] == 'Hardcore Endless':
@@ -76,6 +81,7 @@ class Game:
 
         self.tile_group.empty()
         self.player_group.empty()
+        self.enemy_group.empty()
         self.enemies.clear()
 
         tile_size = Tile.TILE_SIZE
@@ -92,23 +98,42 @@ class Game:
                     self.player.move_y = 0
                     self.player_group.add(self.player)
                     player_placed = True
-                elif tile_type == 'enemy':
-                    self.enemies.append((x, y))
 
         if not player_placed:
             print("[WARNING] Player not placed on map! Defaulting to (0,0)")
             self.player.rect.topleft = (0, 0)
             self.player_group.add(self.player)
 
+    def find_available_enemy_positions(self):
+        positions = []
+        for tile in self.tile_group:
+            if getattr(tile, 'tile_type', '') == 'floor':
+                positions.append(tile.rect.topleft)
+        random.shuffle(positions)
+        return positions[:10]
+
     def start_stage_mode(self):
         self.load_stage(self.player.current_stage)
-        stage_running = True
 
-        exit_rect = None
-        for sprite in self.tile_group:
-            if hasattr(sprite, 'tile_type') and sprite.tile_type == 'exit':
-                exit_rect = sprite.rect
-                break
+        #Wave
+        self.wave_number = 1
+        self.total_waves = min(3 + self.player.current_stage // 2, 10)
+
+        def prepare_wave(wave):
+            self.enemy_group.empty()
+            self.enemies.clear()
+            positions = self.find_available_enemy_positions()
+            wave_enemies = get_enemies_for_stage(self.player.current_stage, positions, wave)
+            for e in wave_enemies:
+                e.enemy_group = self.enemies
+                self.enemies.append(e)
+                self.enemy_group.add(e)
+            self.wave_enemies_remaining = len(wave_enemies)
+
+        prepare_wave(self.wave_number)
+
+        exit_rect = next((s.rect for s in self.tile_group if getattr(s, 'tile_type', '') == 'exit'), None)
+        stage_running = True
 
         while stage_running:
             dt = self.clock.tick(Config.FPS) / 1000
@@ -118,7 +143,6 @@ class Game:
                     sys.exit()
 
             self.screen.fill((20, 20, 20))
-
             self.tile_group.update(dt)
             self.tile_group.draw(self.screen)
 
@@ -126,64 +150,48 @@ class Game:
             self.player_group.update(dt)
             self.player_group.draw(self.screen)
 
-            # --- Stage Label + HUD ---
-            font = pygame.font.Font(None, 32)
-            stage_label = font.render(f"Stage {self.player.current_stage}", True, (255, 255, 255))
-            stage_pos = (20, 20)
-            self.screen.blit(stage_label, stage_pos)
+            for enemy in self.enemy_group:
+                enemy.update(dt, player=self.player)
+                if not enemy.alive:
+                    self.enemy_group.remove(enemy)
+                    self.wave_enemies_remaining -= 1
 
-            bar_x = stage_pos[0] + stage_label.get_width() + 30
-            bar_y = stage_pos[1]
-            bar_width = 100
-            bar_height = 16
-            spacing_y = 22
+            self.enemy_group.draw(self.screen)
 
-            health_ratio = self.player.health / 100
-            health_rect = pygame.Rect(bar_x, bar_y, bar_width * health_ratio, bar_height)
-            pygame.draw.rect(self.screen, (200, 0, 0), health_rect)
-            pygame.draw.rect(self.screen, (255, 255, 255), (bar_x, bar_y, bar_width, bar_height), 2)
-
-            energy_ratio = self.player.energy / self.player.max_energy
-            energy_rect = pygame.Rect(bar_x, bar_y + spacing_y, bar_width * energy_ratio, bar_height)
-            pygame.draw.rect(self.screen, (0, 200, 0), energy_rect)
-            pygame.draw.rect(self.screen, (255, 255, 255), (bar_x, bar_y + spacing_y, bar_width, bar_height), 2)
-
-            hud_font = pygame.font.Font(None, 20)
-            hp_text = hud_font.render(f"HP: {int(self.player.health)}", True, (255, 255, 255))
-            en_text = hud_font.render(f"EN: {int(self.player.energy)}", True, (255, 255, 255))
-            self.screen.blit(hp_text, (bar_x + bar_width + 10, bar_y))
-            self.screen.blit(en_text, (bar_x + bar_width + 10, bar_y + spacing_y))
-
-            #Show HUD
-            hud = Hud(self.screen, self.player)
+            # Show HUD
+            hud = Hud(self.screen, self.player, self.wave_number, self.total_waves)
+            hud.update_wave_info(self.wave_number, self.total_waves)
             hud.draw()
 
-            # --- Trap check ---
             for tile in self.tile_group:
                 if tile.tile_type in ["spike", "poison", "timed_spike"]:
                     trap_check_rect = self.player.rect.inflate(-20, -40)
                     if trap_check_rect.colliderect(tile.rect):
                         if tile.tile_type == "timed_spike" and not getattr(tile, 'active', True):
                             continue
-                        self.player.take_damage(getattr(tile, 'damage', 10))
+                        self.player.trigger_trap(getattr(tile, 'damage', 10))
                         break
 
-            pygame.display.flip()
+            if self.wave_enemies_remaining <= 0:
+                if self.wave_number < self.total_waves:
+                    self.wave_number += 1
+                    prepare_wave(self.wave_number)
+                else:
+                    if exit_rect and self.player.rect.colliderect(exit_rect):
+                        print("Stage complete!")
+                        self.player.on_stage_complete()
+                        PlayerDB().update_player(self.player)
+                        self.load_stage(self.player.current_stage)
+                        self.wave_number = 1
+                        prepare_wave(self.wave_number)
+                        continue
 
             if not self.player.alive:
                 self.last_game_surface = self.screen.copy()
                 self.menu.show_game_over_screen(self)
                 return
 
-            if exit_rect and self.player.rect.colliderect(exit_rect):
-                print("Player reached exit!")
-                self.player.on_stage_complete()
-                PlayerDB().update_player(self.player)
-                self.load_stage(self.player.current_stage)
-                for sprite in self.tile_group:
-                    if hasattr(sprite, 'tile_type') and sprite.tile_type == 'exit':
-                        exit_rect = sprite.rect
-                        break
+            pygame.display.flip()
 
     def run(self):
         self.running = True
