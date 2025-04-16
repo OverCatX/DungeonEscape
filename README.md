@@ -41,9 +41,9 @@ Your mission: survive waves of monsters, collect upgrades, avoid traps, and esca
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
-1. **Clone the repository** (หรือแตกไฟล์ `.zip` ที่ได้จากการดาวน์โหลด)
+1. **Clone the repository** 
 
 ```bash
 git clone https://github.com/your-username/DungeonEscape.git
