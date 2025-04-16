@@ -1,5 +1,5 @@
 import pygame
-from DungeonEscape.entities.entity import Entity
+from entities.entity import Entity
 
 class Enemy(Entity):
     def __init__(self, asset_folder, x=0, y=0):

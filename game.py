@@ -2,14 +2,15 @@ import sys
 import pygame
 import random
 
-from DungeonEscape.config import Config
-from DungeonEscape.db.player_data import PlayerDB
-from DungeonEscape.entities.player import Player
-from DungeonEscape.entities.tile import Tile
-from DungeonEscape.map.random_map_generator import RandomMapGenerator
-from DungeonEscape.managers.enemy_manager import get_enemies_for_stage
-from DungeonEscape.ui.hud import Hud
-from DungeonEscape.ui.menu import Menu
+from config import Config
+from db.player_data import PlayerDB
+from entities.player import Player
+from entities.tile import Tile
+from managers.enemy_manager import get_enemies_for_stage
+from map.random_map_generator import RandomMapGenerator
+from ui.hud import Hud
+from ui.menu import Menu
+
 
 class Game:
     def __init__(self):

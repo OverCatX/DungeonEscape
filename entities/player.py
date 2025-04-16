@@ -1,6 +1,6 @@
 import pygame
 from random import randint
-from DungeonEscape.entities.entity import Entity
+from entities.entity import Entity
 
 class Player(Entity):
     def __init__(self, x=0, y=0, health=300, armor=0, name="Player",

@@ -1,5 +1,5 @@
 from random import choice
-from DungeonEscape.entities.enemies.demon_red import DemonRed
+from entities.enemies.demon_red import DemonRed
 # from DungeonEscape.entities.enemies.skeleton_archer import SkeletonArcher
 # from DungeonEscape.entities.enemies.slime_blue import SlimeBlue
 

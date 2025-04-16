@@ -1,6 +1,6 @@
 import math
 import pygame
-from DungeonEscape.entities.enemies.enemy import Enemy
+from entities.enemies.enemy import Enemy
 
 class DemonRed(Enemy):
     def __init__(self, x=0, y=0):

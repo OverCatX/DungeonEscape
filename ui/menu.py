@@ -5,7 +5,7 @@ import time
 
 import pygame
 import random
-from DungeonEscape.config import Config
+from config import Config
 
 
 class Menu:

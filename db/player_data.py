@@ -1,6 +1,6 @@
 import csv
 import os
-from DungeonEscape.entities.player import Player
+from entities.player import Player
 
 class PlayerDB:
     def __init__(self):
