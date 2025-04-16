@@ -3,7 +3,7 @@ from random import randint
 from entities.entity import Entity
 
 class Player(Entity):
-    def __init__(self, x=0, y=0, health=300, armor=0, name="Player",
+    def __init__(self, x=0, y=0, health=100, armor=0, name="Player",
                  time_played=0, enemies_defeated=0, items_collected=0, max_state=1,
                  current_stage=1):
         super().__init__(asset_folder='player', x=x, y=y)
