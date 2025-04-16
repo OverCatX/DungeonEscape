@@ -66,19 +66,38 @@ class Hud:
         font = pygame.font.Font(None, 48)
         small_font = pygame.font.Font(None, 36)
 
+        # Title
         pause_label = font.render("Game Paused", True, (255, 255, 255))
-        self.screen.blit(pause_label, (self.screen.get_width() // 2 - pause_label.get_width() // 2, 200))
+        self.screen.blit(pause_label, (
+            self.screen.get_width() // 2 - pause_label.get_width() // 2, 200))
 
-        continue_btn = pygame.Rect(self.screen.get_width() // 2 - 100, 300, 200, 50)
-        exit_btn = pygame.Rect(self.screen.get_width() // 2 - 100, 380, 200, 50)
+        # Buttons
+        continue_btn = pygame.Rect(0, 0, 220, 55)
+        exit_btn = pygame.Rect(0, 0, 220, 55)
+        continue_btn.center = (self.screen.get_width() // 2, 300)
+        exit_btn.center = (self.screen.get_width() // 2, 380)
 
-        pygame.draw.rect(self.screen, (80, 80, 80), continue_btn)
-        pygame.draw.rect(self.screen, (200, 0, 0), exit_btn)
+        mouse_pos = pygame.mouse.get_pos()
 
+        # Colors
+        continue_color = (100, 100, 100) if continue_btn.collidepoint(mouse_pos) else (80, 80, 80)
+        exit_color = (220, 0, 0) if exit_btn.collidepoint(mouse_pos) else (200, 0, 0)
+
+        # Draw Rects
+        pygame.draw.rect(self.screen, continue_color, continue_btn)
+        pygame.draw.rect(self.screen, exit_color, exit_btn)
         pygame.draw.rect(self.screen, (255, 255, 255), continue_btn, 2)
         pygame.draw.rect(self.screen, (255, 255, 255), exit_btn, 2)
 
-        self.screen.blit(small_font.render("Continue", True, (255, 255, 255)), (continue_btn.centerx - 50, continue_btn.centery - 15))
-        self.screen.blit(small_font.render("Exit to Menu", True, (255, 255, 255)), (exit_btn.centerx - 70, exit_btn.centery - 15))
+        # Text
+        continue_text = small_font.render("Continue", True, (255, 255, 255))
+        exit_text = small_font.render("Exit to Menu", True, (255, 255, 255))
+
+        self.screen.blit(continue_text, (
+            continue_btn.centerx - continue_text.get_width() // 2,
+            continue_btn.centery - continue_text.get_height() // 2))
+        self.screen.blit(exit_text, (
+            exit_btn.centerx - exit_text.get_width() // 2,
+            exit_btn.centery - exit_text.get_height() // 2))
 
         return continue_btn, exit_btn
