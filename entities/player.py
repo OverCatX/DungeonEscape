@@ -1,11 +1,11 @@
-from random import randint
 import pygame
+from random import randint
 from DungeonEscape.entities.entity import Entity
 
 class Player(Entity):
-    def __init__(self, x=0, y=0, health=100, armor=0, name="Player",
-                 time_played=0, enemies_defeated=0, items_collected=0, max_state=1,
-                 current_stage=1):
+    def __init__(self, x=0, y=0, health=200, armor=0, name="Player",
+                 time_played=0, enemies_defeated=0, items_collected=0, max_state=0,
+                 current_stage=0):
         super().__init__(asset_folder='player', x=x, y=y)
         self.name = name
         self.health = health
@@ -22,6 +22,17 @@ class Player(Entity):
         self.trap_cooldown = 1000
         self.last_trap_hit_time = 0
 
+        # Enemy damage cooldown
+        self.enemy_cooldown = 300
+        self.last_enemy_hit_time = 0
+
+        # Attack system
+        self.attack_cooldown = 100  # delay ระหว่างการโจมตี
+        self.last_attack_time = 0
+        self.attack_duration = 100  # ความยาว animation
+        self.attack_start_time = 0
+        self.is_attacking = False
+
         # Energy system
         self.max_energy = 100
         self.energy = 100
@@ -33,19 +44,16 @@ class Player(Entity):
         self.hit_flash_timer = 0
         self.hit_flash_duration = 500
 
-        self.invulnerable = False
-        self.invuln_timer = 0
-        self.invuln_duration = 0
-
         # Player Stats
         self.time_played = time_played
         self.enemies_defeated = enemies_defeated
         self.items_collected = items_collected
         self.max_state = max_state
 
-    def update(self, dt, tile_group=None):
-        self.handle_input()
+    def update(self, dt, tile_group=None, enemy_group=None):
+        now = pygame.time.get_ticks()
 
+        # พลังงาน
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
             if self.energy > 0:
@@ -55,14 +63,28 @@ class Player(Entity):
             self.energy += self.energy_recover_rate * dt
             self.energy = min(self.max_energy, self.energy)
 
+        # 🎯 ให้เดินได้แม้กำลังโจมตี
+        self.handle_input()
+
+        # ชน tile
         if tile_group:
             self.handle_tile_collision(tile_group)
 
+        # โจมตีเมื่อกด space และไม่รอ cooldown
+        if keys[pygame.K_SPACE] and enemy_group:
+            if now - self.last_attack_time >= self.attack_cooldown:
+                self.attack_enemies(enemy_group)
+
+        # reset animation attack
+        if self.is_attacking and now - self.attack_start_time >= self.attack_duration:
+            self.is_attacking = False
+            self.attack_animation = False
+
+        # update animation sprite
         super().update(dt)
 
-        # Flash when hit
+        # Flash effect ตอนโดนตี
         if self.hit_flash:
-            now = pygame.time.get_ticks()
             elapsed = now - self.hit_flash_timer
             if elapsed >= self.hit_flash_duration:
                 self.hit_flash = False
@@ -81,18 +103,14 @@ class Player(Entity):
         can_dash = self.energy > 0
         self.speed = self.dash_speed if is_dashing and can_dash else self.normal_speed
 
-        if not self.attack_animation:
-            if keys[pygame.K_a]:
-                self.move_x = -self.speed
-            if keys[pygame.K_d]:
-                self.move_x = self.speed
-            if keys[pygame.K_w]:
-                self.move_y = -self.speed
-            if keys[pygame.K_s]:
-                self.move_y = self.speed
-
-        if keys[pygame.K_SPACE]:
-            self.attack()
+        if keys[pygame.K_a]:
+            self.move_x = -self.speed
+        elif keys[pygame.K_d]:
+            self.move_x = self.speed
+        if keys[pygame.K_w]:
+            self.move_y = -self.speed
+        elif keys[pygame.K_s]:
+            self.move_y = self.speed
 
     def handle_tile_collision(self, tiles):
         self.rect.x += self.move_x
@@ -111,6 +129,23 @@ class Player(Entity):
                 elif self.move_y < 0:
                     self.rect.top = tile.rect.bottom
 
+    def attack_enemies(self, enemy_group):
+        now = pygame.time.get_ticks()
+        if now - self.last_attack_time >= self.attack_cooldown:
+            self.attack()
+            self.last_attack_time = now
+            self.attack_start_time = now
+            self.is_attacking = True
+            dead_enemies = []
+            for enemy in enemy_group:
+                if self.rect.colliderect(enemy.rect.inflate(-20, -20)) and enemy.alive:
+                    enemy.take_damage(15)
+                    print(f"[Player] Attacked {enemy.__class__.__name__}")
+                    if not enemy.alive:
+                        dead_enemies.append(enemy)
+            return dead_enemies
+        return []
+
     def take_trap_damage(self, amount):
         now = pygame.time.get_ticks()
         if now - self.last_trap_hit_time >= self.trap_cooldown:
@@ -123,12 +158,15 @@ class Player(Entity):
                 self.die()
 
     def take_enemy_damage(self, amount):
-        self.health -= amount
-        self.hit_flash = True
-        self.hit_flash_timer = pygame.time.get_ticks()
-        print(f"[Enemy] {self.name} took damage: {amount}, HP = {self.health}")
-        if self.health <= 0:
-            self.die()
+        now = pygame.time.get_ticks()
+        if now - self.last_enemy_hit_time >= self.enemy_cooldown:
+            self.health -= amount
+            self.last_enemy_hit_time = now
+            self.hit_flash = True
+            self.hit_flash_timer = now
+            print(f"[Enemy] {self.name} took damage: {amount}, HP = {self.health}")
+            if self.health <= 0:
+                self.die()
 
     def trigger_trap(self, damage):
         self.take_trap_damage(randint(3, damage))

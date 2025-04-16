@@ -42,6 +42,9 @@ class Game:
         self.wave_number = 1
         self.total_waves = 3
         self.wave_enemies_remaining = 0
+        self.wave_popup_text = None
+        self.wave_popup_timer = 0
+        self.wave_popup_duration = 1500
 
     def home_screen(self):
         result = self.menu.home_screen()
@@ -116,9 +119,6 @@ class Game:
         self.wave_number = 1
         self.total_waves = min(3 + self.player.current_stage // 2, 10)
 
-        #Hud
-        hud = Hud(self.screen, self.player)
-
         def prepare_wave(wave):
             self.enemy_group.empty()
             self.enemies.clear()
@@ -129,36 +129,43 @@ class Game:
                 self.enemies.append(e)
                 self.enemy_group.add(e)
             self.wave_enemies_remaining = len(wave_enemies)
+            self.wave_popup_text = f"Wave {wave} Incoming!"
+            self.wave_popup_timer = pygame.time.get_ticks()
 
         prepare_wave(self.wave_number)
 
         exit_rect = next((s.rect for s in self.tile_group if getattr(s, 'tile_type', '') == 'exit'), None)
         stage_running = True
 
+        hud = Hud(self.screen, self.player)
+
         while stage_running:
             dt = self.clock.tick(Config.FPS) / 1000
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 hud.handle_event(event)
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    dead_enemies = self.player.attack_enemies(self.enemy_group)
+                    for enemy in dead_enemies:
+                        if enemy in self.enemy_group:
+                            self.enemy_group.remove(enemy)
+                        if enemy in self.enemies:
+                            self.enemies.remove(enemy)
+                        self.wave_enemies_remaining = max(0, self.wave_enemies_remaining - 1)
 
             if hud.is_paused:
-                continue_btn, exit_btn = hud.show_pause_menu()
+                cont_btn, exit_btn = hud.show_pause_menu()
                 pygame.display.flip()
-
-                while hud.is_paused:
-                    for pause_event in pygame.event.get():
-                        if pause_event.type == pygame.QUIT:
-                            pygame.quit()
-                            sys.exit()
-                        elif pause_event.type == pygame.MOUSEBUTTONDOWN:
-                            if continue_btn.collidepoint(pause_event.pos):
-                                hud.is_paused = False
-                            elif exit_btn.collidepoint(pause_event.pos):
-                                self.game_data['state'] = 'home'
-                                return
-                    self.clock.tick(60)
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if cont_btn.collidepoint(event.pos):
+                            hud.is_paused = False
+                        elif exit_btn.collidepoint(event.pos):
+                            self.game_data['state'] = 'home'
+                            return
                 continue
 
             self.screen.fill((20, 20, 20))
@@ -169,15 +176,17 @@ class Game:
             self.player_group.update(dt)
             self.player_group.draw(self.screen)
 
-            for enemy in self.enemy_group:
+            for enemy in list(self.enemy_group):
                 enemy.update(dt, player=self.player)
                 if not enemy.alive:
                     self.enemy_group.remove(enemy)
-                    self.wave_enemies_remaining -= 1
+                    if enemy in self.enemies:
+                        self.enemies.remove(enemy)
+                    self.wave_enemies_remaining = max(0, self.wave_enemies_remaining - 1)
 
             self.enemy_group.draw(self.screen)
 
-            hud.draw(wave_number=self.wave_number, total_waves=self.total_waves)
+            hud.draw(self.wave_number, self.total_waves, self.wave_enemies_remaining)
 
             for tile in self.tile_group:
                 if tile.tile_type in ["spike", "poison", "timed_spike"]:
@@ -192,20 +201,37 @@ class Game:
                 if self.wave_number < self.total_waves:
                     self.wave_number += 1
                     prepare_wave(self.wave_number)
+
+            if exit_rect and self.player.rect.colliderect(exit_rect):
+                if self.wave_number < self.total_waves or self.wave_enemies_remaining > 0:
+                    warning_font = pygame.font.Font(None, 30)
+                    msg = warning_font.render("Defeat all enemies to proceed!", True, (255, 100, 100))
+                    self.screen.blit(msg, (self.screen.get_width() // 2 - msg.get_width() // 2, 100))
                 else:
-                    if exit_rect and self.player.rect.colliderect(exit_rect):
-                        print("Stage complete!")
-                        self.player.on_stage_complete()
-                        PlayerDB().update_player(self.player)
-                        self.load_stage(self.player.current_stage)
-                        self.wave_number = 1
-                        prepare_wave(self.wave_number)
-                        continue
+                    print("Stage complete!")
+                    self.player.on_stage_complete()
+                    PlayerDB().update_player(self.player)
+                    self.load_stage(self.player.current_stage)
+                    self.wave_number = 1
+                    prepare_wave(self.wave_number)
+                    continue
 
             if not self.player.alive:
                 self.last_game_surface = self.screen.copy()
                 self.menu.show_game_over_screen(self)
                 return
+
+            # --- Show wave popup message ---
+            now = pygame.time.get_ticks()
+            if self.wave_popup_text and now - self.wave_popup_timer < self.wave_popup_duration:
+                font = pygame.font.Font(None, 42)
+                text = font.render(self.wave_popup_text, True, (255, 255, 0))
+                self.screen.blit(text, (
+                    self.screen.get_width() // 2 - text.get_width() // 2,
+                    60
+                ))
+            else:
+                self.wave_popup_text = None
 
             pygame.display.flip()
 

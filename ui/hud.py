@@ -8,43 +8,46 @@ class Hud:
         self.pause_button = pygame.Rect(screen.get_width() - 110, 20, 90, 30)
         self.is_paused = False
 
-    def draw(self, wave_number=None, total_waves=None):
-        spacing_x = 140
-        top_y = 20
-
-        # Stage
-        stage_text = self.font.render(f"Stage {self.player.current_stage}", True, (255, 255, 255))
-        self.screen.blit(stage_text, (20, top_y))
-
-        # Wave
-        if wave_number is not None and total_waves is not None:
-            wave_text = self.font.render(f"Wave {wave_number}/{total_waves}", True, (255, 255, 255))
-            self.screen.blit(wave_text, (20 + spacing_x, top_y))
-
-        # Health Bar
-        bar_x = 20 + spacing_x * 2
+    def draw(self, wave_number=None, total_waves=None, enemies_remaining=None):
+        bar_x = 20
+        bar_y = 20
         bar_width = 100
         bar_height = 16
+        spacing_y = 22
 
+        # Health
         health_ratio = self.player.health / 100
-        health_rect = pygame.Rect(bar_x, top_y, bar_width * health_ratio, bar_height)
+        health_rect = pygame.Rect(bar_x, bar_y, bar_width * health_ratio, bar_height)
         pygame.draw.rect(self.screen, (200, 0, 0), health_rect)
-        pygame.draw.rect(self.screen, (255, 255, 255), (bar_x, top_y, bar_width, bar_height), 2)
+        pygame.draw.rect(self.screen, (255, 255, 255), (bar_x, bar_y, bar_width, bar_height), 2)
 
-        # Energy Bar
+        # Energy
         energy_ratio = self.player.energy / self.player.max_energy
-        energy_rect = pygame.Rect(bar_x, top_y + 20, bar_width * energy_ratio, bar_height)
+        energy_rect = pygame.Rect(bar_x, bar_y + spacing_y, bar_width * energy_ratio, bar_height)
         pygame.draw.rect(self.screen, (0, 200, 0), energy_rect)
-        pygame.draw.rect(self.screen, (255, 255, 255), (bar_x, top_y + 20, bar_width, bar_height), 2)
+        pygame.draw.rect(self.screen, (255, 255, 255), (bar_x, bar_y + spacing_y, bar_width, bar_height), 2)
 
-        # HP / EN Labels
+        # Labels
         small_font = pygame.font.Font(None, 20)
         hp_text = small_font.render(f"HP: {int(self.player.health)}", True, (255, 255, 255))
         en_text = small_font.render(f"EN: {int(self.player.energy)}", True, (255, 255, 255))
-        self.screen.blit(hp_text, (bar_x + bar_width + 10, top_y))
-        self.screen.blit(en_text, (bar_x + bar_width + 10, top_y + 20))
+        self.screen.blit(hp_text, (bar_x + bar_width + 10, bar_y))
+        self.screen.blit(en_text, (bar_x + bar_width + 10, bar_y + spacing_y))
 
-        # Pause button (ขวาบน)
+        # Stage, Wave, Enemy Left
+        y_offset = bar_y + spacing_y * 2 + 10
+        stage_text = self.font.render(f"Stage {self.player.current_stage}", True, (255, 255, 255))
+        self.screen.blit(stage_text, (bar_x, y_offset))
+
+        if wave_number is not None and total_waves is not None:
+            wave_text = self.font.render(f"Wave {wave_number}/{total_waves}", True, (255, 255, 255))
+            self.screen.blit(wave_text, (bar_x, y_offset + spacing_y))
+
+        if enemies_remaining is not None:
+            enemy_text = self.font.render(f"Enemies Left: {enemies_remaining}", True, (255, 255, 255))
+            self.screen.blit(enemy_text, (bar_x, y_offset + spacing_y * 2))
+
+        # Pause button
         pygame.draw.rect(self.screen, (50, 50, 50), self.pause_button)
         pygame.draw.rect(self.screen, (255, 255, 255), self.pause_button, 2)
         text = self.font.render("Pause", True, (255, 255, 255))
