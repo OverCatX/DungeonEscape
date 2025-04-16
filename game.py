@@ -46,6 +46,8 @@ class Game:
         self.wave_popup_timer = 0
         self.wave_popup_duration = 1500
 
+        self.clear_popup_shown = False
+
     def home_screen(self):
         result = self.menu.home_screen()
         if result == 'exit':
@@ -159,13 +161,14 @@ class Game:
             if hud.is_paused:
                 cont_btn, exit_btn = hud.show_pause_menu()
                 pygame.display.flip()
-                for event in pygame.event.get():
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        if cont_btn.collidepoint(event.pos):
-                            hud.is_paused = False
-                        elif exit_btn.collidepoint(event.pos):
-                            self.game_data['state'] = 'home'
-                            return
+                mouse_pos = pygame.mouse.get_pos()
+                mouse_pressed = pygame.mouse.get_pressed()
+                if mouse_pressed[0]:  # L-click
+                    if cont_btn.collidepoint(mouse_pos):
+                        hud.is_paused = False
+                    elif exit_btn.collidepoint(mouse_pos):
+                        self.game_data['state'] = 'home'
+                        return
                 continue
 
             self.screen.fill((20, 20, 20))
@@ -201,6 +204,8 @@ class Game:
                 if self.wave_number < self.total_waves:
                     self.wave_number += 1
                     prepare_wave(self.wave_number)
+                else:
+                    self.clear_popup_shown = True
 
             if exit_rect and self.player.rect.colliderect(exit_rect):
                 if self.wave_number < self.total_waves or self.wave_enemies_remaining > 0:
@@ -209,17 +214,19 @@ class Game:
                     self.screen.blit(msg, (self.screen.get_width() // 2 - msg.get_width() // 2, 100))
                 else:
                     print("Stage complete!")
-                    self.player.on_stage_complete()
+                    self.fade_out()  # ✅ เรียก fade ก่อนข้าม stage
+                    self.on_stage_complete()
                     PlayerDB().update_player(self.player)
                     self.load_stage(self.player.current_stage)
                     self.wave_number = 1
+                    self.clear_popup_shown = False
                     prepare_wave(self.wave_number)
-                    continue
 
             if not self.player.alive:
                 self.last_game_surface = self.screen.copy()
                 self.menu.show_game_over_screen(self)
                 return
+
 
             # --- Show wave popup message ---
             now = pygame.time.get_ticks()
@@ -233,7 +240,40 @@ class Game:
             else:
                 self.wave_popup_text = None
 
+            if self.clear_popup_shown:
+                font = pygame.font.Font(None, 30)
+                msg = font.render("All waves cleared! Head to the exit", True, (0, 255, 100))
+                self.screen.blit(msg, (
+                    self.screen.get_width() // 2 - msg.get_width() // 2,
+                    100
+                ))
+
             pygame.display.flip()
+
+    def fade_out(self, duration=1000):
+        fade_surface = pygame.Surface(self.screen.get_size())
+        fade_surface.fill((0, 0, 0))
+        clock = pygame.time.Clock()
+        alpha = 0
+        start_time = pygame.time.get_ticks()
+
+        while alpha < 255:
+            now = pygame.time.get_ticks()
+            elapsed = now - start_time
+            alpha = min(255, int((elapsed / duration) * 255))
+            fade_surface.set_alpha(alpha)
+
+            self.screen.blit(fade_surface, (0, 0))
+            pygame.display.flip()
+            clock.tick(60)
+
+    def on_stage_complete(self):
+        self.player.current_stage += 1
+        if self.player.current_stage > self.player.max_state:
+            self.player.max_state = self.player.current_stage
+            #Max Health when changed state
+            self.player.health = 100
+        print(f"[Player] Stage completed. New stage: {self.player.current_stage}")
 
     def run(self):
         self.running = True

@@ -3,9 +3,9 @@ from random import randint
 from DungeonEscape.entities.entity import Entity
 
 class Player(Entity):
-    def __init__(self, x=0, y=0, health=200, armor=0, name="Player",
-                 time_played=0, enemies_defeated=0, items_collected=0, max_state=0,
-                 current_stage=0):
+    def __init__(self, x=0, y=0, health=300, armor=0, name="Player",
+                 time_played=0, enemies_defeated=0, items_collected=0, max_state=1,
+                 current_stage=1):
         super().__init__(asset_folder='player', x=x, y=y)
         self.name = name
         self.health = health
@@ -63,7 +63,7 @@ class Player(Entity):
             self.energy += self.energy_recover_rate * dt
             self.energy = min(self.max_energy, self.energy)
 
-        # 🎯 ให้เดินได้แม้กำลังโจมตี
+        #ให้เดินได้แม้กำลังโจมตี
         self.handle_input()
 
         # ชน tile
