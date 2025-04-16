@@ -214,7 +214,7 @@ class Game:
                     self.screen.blit(msg, (self.screen.get_width() // 2 - msg.get_width() // 2, 100))
                 else:
                     print("Stage complete!")
-                    self.fade_out()  # ✅ เรียก fade ก่อนข้าม stage
+                    self.fade_out()
                     self.on_stage_complete()
                     PlayerDB().update_player(self.player)
                     self.load_stage(self.player.current_stage)

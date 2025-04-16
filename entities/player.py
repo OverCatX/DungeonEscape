@@ -27,9 +27,9 @@ class Player(Entity):
         self.last_enemy_hit_time = 0
 
         # Attack system
-        self.attack_cooldown = 100  # delay ระหว่างการโจมตี
+        self.attack_cooldown = 100
         self.last_attack_time = 0
-        self.attack_duration = 100  # ความยาว animation
+        self.attack_duration = 100
         self.attack_start_time = 0
         self.is_attacking = False
 
@@ -53,7 +53,7 @@ class Player(Entity):
     def update(self, dt, tile_group=None, enemy_group=None):
         now = pygame.time.get_ticks()
 
-        # พลังงาน
+        # Energy
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
             if self.energy > 0:
@@ -63,14 +63,14 @@ class Player(Entity):
             self.energy += self.energy_recover_rate * dt
             self.energy = min(self.max_energy, self.energy)
 
-        #ให้เดินได้แม้กำลังโจมตี
+        #Walkable attack
         self.handle_input()
 
         # ชน tile
         if tile_group:
             self.handle_tile_collision(tile_group)
 
-        # โจมตีเมื่อกด space และไม่รอ cooldown
+        # attack without cooldown
         if keys[pygame.K_SPACE] and enemy_group:
             if now - self.last_attack_time >= self.attack_cooldown:
                 self.attack_enemies(enemy_group)
@@ -83,7 +83,7 @@ class Player(Entity):
         # update animation sprite
         super().update(dt)
 
-        # Flash effect ตอนโดนตี
+        # Flash effect when hit
         if self.hit_flash:
             elapsed = now - self.hit_flash_timer
             if elapsed >= self.hit_flash_duration:
@@ -142,6 +142,7 @@ class Player(Entity):
                     enemy.take_damage(15)
                     print(f"[Player] Attacked {enemy.__class__.__name__}")
                     if not enemy.alive:
+                        self.enemies_defeated += 1
                         dead_enemies.append(enemy)
             return dead_enemies
         return []
