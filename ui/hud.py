@@ -58,7 +58,10 @@ class Hud:
         if event.type == pygame.MOUSEBUTTONDOWN and self.pause_button.collidepoint(event.pos):
             self.is_paused = True
 
-    def show_pause_menu(self):
+    def show_pause_menu(self, background=None):
+        if background:
+            self.screen.blit(background, (0, 0))  # แสดงพื้นหลังเดิม
+
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
         self.screen.blit(overlay, (0, 0))
@@ -79,7 +82,7 @@ class Hud:
 
         mouse_pos = pygame.mouse.get_pos()
 
-        # Colors
+        # Hover สี
         continue_color = (100, 100, 100) if continue_btn.collidepoint(mouse_pos) else (80, 80, 80)
         exit_color = (220, 0, 0) if exit_btn.collidepoint(mouse_pos) else (200, 0, 0)
 
@@ -92,7 +95,6 @@ class Hud:
         # Text
         continue_text = small_font.render("Continue", True, (255, 255, 255))
         exit_text = small_font.render("Exit to Menu", True, (255, 255, 255))
-
         self.screen.blit(continue_text, (
             continue_btn.centerx - continue_text.get_width() // 2,
             continue_btn.centery - continue_text.get_height() // 2))

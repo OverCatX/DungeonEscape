@@ -26,7 +26,7 @@ class Game:
             'state': 'home',
             'mode': None
         }
-        self.last_game_surface = None
+        self.last_game_surface = self.screen.copy()
         self.running = False
 
         self.player = Player()
@@ -159,17 +159,21 @@ class Game:
                         self.wave_enemies_remaining = max(0, self.wave_enemies_remaining - 1)
 
             if hud.is_paused:
-                cont_btn, exit_btn = hud.show_pause_menu()
-                pygame.display.flip()
-                mouse_pos = pygame.mouse.get_pos()
-                mouse_pressed = pygame.mouse.get_pressed()
-                if mouse_pressed[0]:  # L-click
-                    if cont_btn.collidepoint(mouse_pos):
-                        hud.is_paused = False
-                    elif exit_btn.collidepoint(mouse_pos):
-                        self.game_data['state'] = 'home'
-                        return
-                continue
+                self.last_game_surface = self.screen.copy()
+                while hud.is_paused:
+                    cont_btn, exit_btn = hud.show_pause_menu(self.last_game_surface)
+                    pygame.display.flip()
+
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
+                        elif event.type == pygame.MOUSEBUTTONDOWN:
+                            if cont_btn.collidepoint(event.pos):
+                                hud.is_paused = False
+                            elif exit_btn.collidepoint(event.pos):
+                                self.game_data['state'] = 'home'
+                                return
 
             self.screen.fill((20, 20, 20))
             self.tile_group.update(dt)
