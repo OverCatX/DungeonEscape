@@ -1,5 +1,4 @@
-from random import random, randint
-
+from random import randint
 import pygame
 from DungeonEscape.entities.entity import Entity
 
@@ -20,7 +19,7 @@ class Player(Entity):
         self.dash_speed = 3
 
         # Trap system
-        self.trap_cooldown = 1000  # ms
+        self.trap_cooldown = 1000
         self.last_trap_hit_time = 0
 
         # Energy system
@@ -29,10 +28,14 @@ class Player(Entity):
         self.energy_decrease_rate = 30
         self.energy_recover_rate = 3
 
-        # Hurt flash effect
+        # Flash on hurt
         self.hit_flash = False
         self.hit_flash_timer = 0
-        self.hit_flash_duration = 500  # ms
+        self.hit_flash_duration = 500
+
+        self.invulnerable = False
+        self.invuln_timer = 0
+        self.invuln_duration = 0
 
         # Player Stats
         self.time_played = time_played
@@ -57,7 +60,7 @@ class Player(Entity):
 
         super().update(dt)
 
-        # Flicker effect while hurt
+        # Flash when hit
         if self.hit_flash:
             now = pygame.time.get_ticks()
             elapsed = now - self.hit_flash_timer
@@ -108,7 +111,7 @@ class Player(Entity):
                 elif self.move_y < 0:
                     self.rect.top = tile.rect.bottom
 
-    def take_damage(self, amount):
+    def take_trap_damage(self, amount):
         now = pygame.time.get_ticks()
         if now - self.last_trap_hit_time >= self.trap_cooldown:
             self.health -= amount
@@ -119,8 +122,16 @@ class Player(Entity):
             if self.health <= 0:
                 self.die()
 
-    def trigger_trap(self):
-        self.take_damage(randint(6,10))
+    def take_enemy_damage(self, amount):
+        self.health -= amount
+        self.hit_flash = True
+        self.hit_flash_timer = pygame.time.get_ticks()
+        print(f"[Enemy] {self.name} took damage: {amount}, HP = {self.health}")
+        if self.health <= 0:
+            self.die()
+
+    def trigger_trap(self, damage):
+        self.take_trap_damage(randint(6, damage))
 
     def die(self):
         print(f"{self.name} has died.")
@@ -139,4 +150,6 @@ class Player(Entity):
         self.items_collected = items_collected
 
     def __str__(self):
-        return f'Player: {self.name}, State: {self.current_stage}, MaxState: {self.max_state}, TimePlayed: {self.time_played}, EnemiesDefeated: {self.enemies_defeated}, ItemsCollected: {self.items_collected}'
+        return (f'Player: {self.name}, State: {self.current_stage}, MaxState: {self.max_state}, '
+                f'TimePlayed: {self.time_played}, EnemiesDefeated: {self.enemies_defeated}, '
+                f'ItemsCollected: {self.items_collected}')
