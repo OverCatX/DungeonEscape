@@ -572,6 +572,53 @@ class Menu:
         else:
             self.color_rect = self.color_inactive
 
+    def character_selection_screen(self):
+        screen = self.screen
+        clock = pygame.time.Clock()
+        font = pygame.font.Font(None, 36)
+        big_font = pygame.font.Font(None, 48)
+
+        characters = [
+            {"name": "Swordman", "desc": "Balanced melee fighter.",
+             "image": pygame.image.load("assets/char_select/swordman.png")},
+            {"name": "Archer", "desc": "Long-range but fragile.",
+             "image": pygame.image.load("assets/char_select/archer.png")}
+        ]
+
+        index = 0
+        selecting = True
+
+        while selecting:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        index = (index - 1) % len(characters)
+                    elif event.key == pygame.K_RIGHT:
+                        index = (index + 1) % len(characters)
+                    elif event.key == pygame.K_RETURN:
+                        return characters[index]["name"]
+
+            screen.fill((10, 10, 10))
+            title = big_font.render("Select Your Character", True, (255, 255, 255))
+            screen.blit(title, (screen.get_width() // 2 - title.get_width() // 2, 80))
+
+            char = characters[index]
+            screen.blit(char["image"], (screen.get_width() // 2 - 64, 150))
+
+            name_text = font.render(char["name"], True, (255, 255, 0))
+            desc_text = font.render(char["desc"], True, (200, 200, 200))
+            screen.blit(name_text, (screen.get_width() // 2 - name_text.get_width() // 2, 300))
+            screen.blit(desc_text, (screen.get_width() // 2 - desc_text.get_width() // 2, 340))
+
+            tip = font.render("← → to choose, Enter to confirm", True, (180, 180, 180))
+            screen.blit(tip, (screen.get_width() // 2 - tip.get_width() // 2, 420))
+
+            pygame.display.flip()
+            clock.tick(60)
+
 import random
 
 class Particle:
