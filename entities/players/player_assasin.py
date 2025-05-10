@@ -8,7 +8,7 @@ class PlayerAssassin(Player):
     def __init__(self, x=0, y=0, name="Assassin",character_type="assassin", **kwargs):
         super().__init__(asset_folder = 'characters/assassin', x=x, y=y, name=name, character_type=character_type, **kwargs)
         self.attack_range = 60
-        self.damage = 22
+        self.damage = 40
         self.attack_direction = 'right'
         self.dagger_offset = 32
         self.attack_duration = 200
@@ -57,11 +57,9 @@ class PlayerAssassin(Player):
         dx = enemy.rect.centerx - self.rect.centerx
         dy = enemy.rect.centery - self.rect.centery
 
-        # ✅ ถ้า overlap = ซ้อนตัว = ตีได้แน่นอน
         if abs(dx) < 10 and abs(dy) < 10:
             return True
 
-        # ✅ ฟันตามทิศพร้อม tolerance แนวกว้าง
         if self.attack_direction == 'right':
             return 0 <= dx <= self.attack_range and abs(dy) <= 30
         elif self.attack_direction == 'left':

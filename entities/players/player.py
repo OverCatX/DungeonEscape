@@ -56,7 +56,7 @@ class Player(Entity):
 
     def setup_stats_by_type(self):
         if self.character_type == 'assassin':
-            self.health = 100
+            self.health = 200
             self.damage = 15
             self.speed = 2
         elif self.character_type == 'archer':
