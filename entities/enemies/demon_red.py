@@ -1,6 +1,11 @@
 import math
+import random
+
 import pygame
 from entities.enemies.enemy import Enemy
+from entities.items.dropitem import DropItem
+from entities.items.health_item import HealthDrop
+
 
 class DemonRed(Enemy):
     def __init__(self, x=0, y=0):
@@ -68,7 +73,7 @@ class DemonRed(Enemy):
             if distance <= self.attack_range:
                 if now - self.last_attack_time >= self.attack_cooldown:
                     self.last_attack_time = now
-                    player.take_enemy_damage(self.damage)
+                    player.take_enemy_damage(self.damage, self)
                     print(f"[DemonRed] attacked player for {self.damage} damage")
 
         super().update(dt)

@@ -4,10 +4,12 @@ import random
 
 from config import Config
 from db.player_data import PlayerDB
-from entities.player import Player
+from entities.items.dropitem import DropItem
+from entities.players.player import Player
 from entities.tile import Tile
 from managers.enemy_manager import get_enemies_for_stage
 from map.random_map_generator import RandomMapGenerator
+from ui.charactor_menu import CharacterSelectUI
 from ui.hud import Hud
 from ui.menu import Menu
 
@@ -19,7 +21,9 @@ class Game:
         self.screen = pygame.display.set_mode((Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT))
         pygame.display.set_caption("Dungeon Escape V.1")
 
+        #Image load
         Tile.load_images()
+        DropItem.load_images()
 
         self.clock = pygame.time.Clock()
         self.menu = Menu(self.screen)
@@ -39,6 +43,7 @@ class Game:
         self.tile_group = pygame.sprite.Group()
         self.player_group = pygame.sprite.Group()
         self.enemy_group = pygame.sprite.Group()
+        self.item_group = pygame.sprite.Group()
 
         self.wave_number = 1
         self.total_waves = 3
@@ -66,9 +71,29 @@ class Game:
 
     def game_mode_selection(self):
         selected_mode = self.menu.game_selection_screen()
+
         if selected_mode == "back":
             self.game_data['state'] = 'player_progress'
-        elif selected_mode:
+            return
+
+        if selected_mode:
+            self.last_game_surface = self.screen.copy()
+
+            ui = CharacterSelectUI(self.screen)
+            ui.last_surface_copy = self.last_game_surface.copy()
+            self.player = ui.select_character(self.player.name)
+
+            saved_player = PlayerDB().player_login(self.player.name)
+            if saved_player:
+                self.player.time_played = saved_player.time_played
+                self.player.enemies_defeated = saved_player.enemies_defeated
+                self.player.items_collected = saved_player.items_collected
+                self.player.max_state = saved_player.max_state
+                self.player.current_stage = saved_player.current_stage
+
+            self.player_group.empty()
+            self.player_group.add(self.player)
+            print(self.player)
             self.game_data['mode'] = selected_mode
             self.game_data['state'] = 'on_game'
 
@@ -124,7 +149,9 @@ class Game:
 
         def prepare_wave(wave):
             self.enemy_group.empty()
+            self.item_group.empty()
             self.enemies.clear()
+            self.items.clear()
             positions = self.find_available_enemy_positions()
             wave_enemies = get_enemies_for_stage(self.player.current_stage, positions, wave)
             for e in wave_enemies:
@@ -150,9 +177,16 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 hud.handle_event(event)
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
+                    self.last_game_surface = self.screen.copy()
+                    # self.character_select_overlay()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     dead_enemies = self.player.attack_enemies(self.enemy_group)
                     for enemy in dead_enemies:
+                        # Item drops
+                        if random.random() < 0.6:
+                            drop = DropItem(enemy.rect.centerx, enemy.rect.centery, 'health')
+                            self.item_group.add(drop)
                         if enemy in self.enemy_group:
                             self.enemy_group.remove(enemy)
                         if enemy in self.enemies:
@@ -182,17 +216,39 @@ class Game:
 
             self.player.update(dt, tile_group=self.tile_group)
             self.player_group.update(dt)
-            self.player_group.draw(self.screen)
+            # self.player_group.draw(self.screen)
+            for sprite in self.player_group:
+                if hasattr(sprite, 'draw'):
+                    sprite.draw(self.screen)
+                else:
+                    self.screen.blit(sprite.image, sprite.rect)
+            if hasattr(self.player, 'projectiles'):
+                for arrow in self.player.projectiles:
+                    enemy = pygame.sprite.spritecollideany(arrow, self.enemy_group)
+                    if enemy and enemy.alive:
+                        arrow.deal_damage(enemy)
+                        if not enemy.alive:
+                            if random.random() < 0.6:
+                                drop = DropItem(enemy.rect.centerx, enemy.rect.centery, 'health')
+                                self.item_group.add(drop)
+                            self.enemy_group.remove(enemy)
+                            self.enemies.remove(enemy)
+                            self.wave_enemies_remaining = max(0, self.wave_enemies_remaining - 1)
+                            self.player.enemies_defeated += 1
 
             for enemy in list(self.enemy_group):
                 enemy.update(dt, player=self.player)
-                if not enemy.alive:
-                    self.enemy_group.remove(enemy)
-                    if enemy in self.enemies:
-                        self.enemies.remove(enemy)
-                    self.wave_enemies_remaining = max(0, self.wave_enemies_remaining - 1)
+                # if not enemy.alive:
+                #     self.enemy_group.remove(enemy)
+                #     print('debug: enemy die')
+                #     if enemy in self.enemies:
+                #         self.enemies.remove(enemy)
+                #     self.wave_enemies_remaining = max(0, self.wave_enemies_remaining - 1)
+                    # if random.random() < 0.6:
 
             self.enemy_group.draw(self.screen)
+            self.item_group.update(dt, self.player)
+            self.item_group.draw(self.screen)
 
             hud.draw(self.wave_number, self.total_waves, self.wave_enemies_remaining)
 

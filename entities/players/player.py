@@ -3,15 +3,19 @@ from random import randint
 from entities.entity import Entity
 
 class Player(Entity):
-    def __init__(self, x=0, y=0, health=100, armor=0, name="Player",
+    def __init__(self, x=0, y=0, health=100, armor=0, name="Player", character_type='assassin',
                  time_played=0, enemies_defeated=0, items_collected=0, max_state=1,
-                 current_stage=1):
-        super().__init__(asset_folder='player', x=x, y=y)
+                 current_stage=1, asset_folder='player'):
+        super().__init__(asset_folder=asset_folder, x=x, y=y)
         self.name = name
         self.health = health
         self.armor = armor
+        self.character_type = character_type
+        self.setup_stats_by_type()
         self.current_stage = current_stage
         self.alive = True
+        self.facing = 'down'
+        self.knockback = pygame.math.Vector2(0, 0)
 
         # Speed
         self.speed = 2
@@ -49,6 +53,16 @@ class Player(Entity):
         self.enemies_defeated = enemies_defeated
         self.items_collected = items_collected
         self.max_state = max_state
+
+    def setup_stats_by_type(self):
+        if self.character_type == 'assassin':
+            self.health = 100
+            self.damage = 15
+            self.speed = 2
+        elif self.character_type == 'archer':
+            self.health = 100
+            self.damage = 10
+            self.speed = 3
 
     def update(self, dt, tile_group=None, enemy_group=None):
         now = pygame.time.get_ticks()
@@ -105,12 +119,19 @@ class Player(Entity):
 
         if keys[pygame.K_a]:
             self.move_x = -self.speed
+            self.facing = 'left'
         elif keys[pygame.K_d]:
             self.move_x = self.speed
+            self.facing = 'right'
         if keys[pygame.K_w]:
             self.move_y = -self.speed
+            self.facing = 'up'
         elif keys[pygame.K_s]:
             self.move_y = self.speed
+            self.facing = 'down'
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
 
     def handle_tile_collision(self, tiles):
         self.rect.x += self.move_x
@@ -158,7 +179,7 @@ class Player(Entity):
             if self.health <= 0:
                 self.die()
 
-    def take_enemy_damage(self, amount):
+    def take_enemy_damage(self, amount, source):
         now = pygame.time.get_ticks()
         if now - self.last_enemy_hit_time >= self.enemy_cooldown:
             self.health -= amount

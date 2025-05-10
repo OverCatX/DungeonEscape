@@ -9,10 +9,15 @@ class Enemy(Entity):
         self.move_x = 0
         self.move_y = 0
         self.enemy_group = []
+        self.knockback = pygame.math.Vector2(0, 0)
 
     def update(self, dt):
-        self.rect.x += self.move_x
-        self.rect.y += self.move_y
+        velocity = pygame.Vector2(self.move_x, self.move_y)
+        if self.knockback.length() > 0.5:
+            velocity = self.knockback
+            self.knockback *= 0.85
+        self.rect.x += velocity.x
+        self.rect.y += velocity.y
         super().update(dt)
 
     def take_damage(self, amount):
@@ -22,5 +27,5 @@ class Enemy(Entity):
 
     def die(self):
         self.alive = False
-        print(f"[Enemy] {self.__class__.__name__} died")
+        print(f"[Enemy] {self.__class__.__name__} died", self.alive)
         self.kill()  # remove from sprite group
