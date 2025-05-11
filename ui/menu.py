@@ -1,3 +1,4 @@
+import csv
 import math
 import os
 import sys
@@ -237,7 +238,6 @@ class Menu:
         box_x = self.screen.get_width() // 2 - box_width // 2
         box_y = 80
 
-        # กล่อง animation
         t = time.time()
         float_offset = math.sin(t * 2) * 5
         animated_box_y = box_y + float_offset
@@ -248,28 +248,47 @@ class Menu:
         pygame.draw.rect(surface, background_color, surface.get_rect(), border_radius=border_radius)
         self.screen.blit(surface, (box_x, animated_box_y))
 
-        # Edge
         box_rect = pygame.Rect(box_x, animated_box_y, box_width, box_height)
         pygame.draw.rect(self.screen, (90, 90, 90), box_rect, 3, border_radius=border_radius)
 
-        # Title
         title_font = pygame.font.Font(os.path.join("assets", "fonts", "Balthazar.ttf"), 64)
-        title = title_font.render("Player Stats", True, pygame.Color("#FFD700"))
+        title = title_font.render("Player Stats Overall", True, pygame.Color("#FFD700"))
         title_rect = title.get_rect(center=(self.screen.get_width() // 2, animated_box_y + 40))
         self.screen.blit(title, title_rect)
 
-        # Data
         stats_font = pygame.font.Font(None, 36)
-        info = [
-            ("Username", player.name),
-            ("MaxState", player.max_state),
-            ("Time Played", player.time_played),
-            ("Enemies Defeated", player.enemies_defeated),
-            ("Items Collected", player.items_collected)
-        ]
+
+        # Load player.csv summary row
+        stats_row = None
+        try:
+            with open("stats/players.csv", newline='') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if row['name'] == player.name:
+                        stats_row = row
+                        break
+        except Exception as e:
+            print("[ERROR] Failed to load players.csv:", e)
+
+        if stats_row:
+            info = [
+                ("Username", player.name),
+                ("Total Sessions", stats_row.get("total_sessions", "-")),
+                ("Avg Time Played", stats_row.get("time_played", "-")),
+                ("Avg Enemies Defeated", stats_row.get("enemies_defeated", "-")),
+                ("Avg Dash Used", stats_row.get("dash_used", "-")),
+                ("Avg Traps Triggered", stats_row.get("traps_triggered", "-")),
+                ("Avg Distance Traveled", stats_row.get("distance_traveled", "-")),
+                ("Win Rate", f"{float(stats_row.get('survived', 0))*100:.1f}%")
+            ]
+        else:
+            info = [
+                ("No gameplay data yet.", ""),
+                ("Start your first run", "to track stats!")
+            ]
 
         start_y = title_rect.bottom + 20
-        gap = 55
+        gap = 45
 
         for i, (label, value) in enumerate(info):
             label_text = stats_font.render(f"{label}:", True, pygame.Color("#CCCCCC"))
@@ -281,7 +300,6 @@ class Menu:
             self.screen.blit(label_text, label_rect)
             self.screen.blit(value_text, value_rect)
 
-        # ปุ่มแบบลอย
         button_width = 180
         button_height = 50
         spacing = 40
@@ -310,7 +328,6 @@ class Menu:
             button_height
         )
 
-        # วาดปุ่ม
         self.draw_button(
             self.next_button,
             "Continue",
