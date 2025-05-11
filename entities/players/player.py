@@ -226,7 +226,6 @@ class Player(Entity):
     def reset_stats(self):
         self.time_played = 0
         self.enemies_defeated = 0
-        self.items_collected = 0
         self.traps_triggered = 0
         self.dash_used = 0
         self.distance_traveled = 0
