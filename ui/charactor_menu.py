@@ -4,6 +4,8 @@ import pygame
 
 from entities.players.player_archer import PlayerArcher
 from entities.players.player_assasin import *
+from entities.players.player_blink import PlayerBlink
+
 
 class CharacterCard:
     def __init__(self, name, image, description, cls, position):
@@ -55,7 +57,7 @@ class CharacterSelectUI:
                 "desc": "Long-range attacker.\nEffective vs slow enemies.\nStruggles in close combat."
             },
             {
-                "type": "Mage",
+                "type": "Blink",
                 "img": pygame.transform.scale(
                     pygame.image.load("assets/characters/mage_thumb.png").convert_alpha(),
                     (64, 64)
@@ -131,3 +133,5 @@ class CharacterSelectUI:
                                 return PlayerAssassin(name=name,character_type=char["type"])
                             elif char["type"] == 'Archer':
                                 return PlayerArcher(name=name,character_type=char["type"])
+                            elif char["type"] == 'Blink':
+                                return PlayerBlink(name=name,character_type=char["type"])
