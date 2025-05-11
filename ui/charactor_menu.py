@@ -123,7 +123,7 @@ class CharacterSelectUI:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit(); sys.exit()
+                    return None
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if close_btn.collidepoint(event.pos):
                         return None

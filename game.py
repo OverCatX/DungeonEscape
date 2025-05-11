@@ -84,6 +84,9 @@ class Game:
             ui = CharacterSelectUI(self.screen)
             ui.last_surface_copy = self.last_game_surface.copy()
             self.player = ui.select_character(self.player.name)
+            if self.player is None:
+                self.game_data['state'] = 'home'
+                return
             self.player.reset_stats()
             self.session_saved = False
 
