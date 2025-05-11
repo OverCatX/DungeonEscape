@@ -138,7 +138,7 @@ python main.py
 
 ## 📹 Video Presentation
 
-🎥 [Click to watch](https://youtube.com/your_video_link)
+🎥 [Click to watch](https://youtu.be/QCp5Ip2avjc?feature=shared)
 
 - Game overview
 - Character and enemy design
