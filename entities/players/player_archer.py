@@ -10,6 +10,7 @@ class PlayerArcher(Player):
         self.attack_range = 60
         self.attack_cooldown = 150  # cooldown per shot during burst
         self.damage = 14
+        self.speed = 3
         self.attack_direction = 'right'
         self.attack_duration = 200
         self.projectiles = pygame.sprite.Group()
