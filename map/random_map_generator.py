@@ -15,9 +15,23 @@ class RandomMapGenerator:
         self.map[1][1] = "player"
 
         # place exit
-        y = random.randint(1, self.height - 2)
-        if self.map[y][self.width - 2] == "floor":
-            self.map[y][self.width - 2] = "exit"
+        candidate_exits = []
+        for y in range(2, self.height - 2):
+            for x in range(2, self.width - 2):
+                if self.map[y][x] == 'floor':
+                    neighbors = [
+                        self.map[y + 1][x], self.map[y - 1][x],
+                        self.map[y][x + 1], self.map[y][x - 1]
+                    ]
+                    if neighbors.count('floor') >= 3:
+                        candidate_exits.append((x, y))
+
+        if candidate_exits:
+            exit_x, exit_y = random.choice(candidate_exits)
+            self.map[exit_y][exit_x] = 'exit'
+        # y = random.randint(1, self.height - 2)
+        # if self.map[y][self.width - 2] == "floor":
+        #     self.map[y][self.width - 2] = "exit"
 
         # place random traps
         for _ in range(20):
@@ -39,4 +53,4 @@ class RandomMapGenerator:
                     break
             if not placed:
                 print("[Warning] Failed to place enemy after 100 tries.")
-            return self.map
+        return self.map
