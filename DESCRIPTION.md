@@ -1,5 +1,7 @@
 # 🐉 Dungeon Escape
 
+**Created by**: Bhumipat Kusalatham
+
 **GitHub**: https://github.com/OverCatX/DungeonEscape
 
 ---
