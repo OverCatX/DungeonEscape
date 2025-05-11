@@ -1,5 +1,4 @@
-# Tested on: pygame 2.6.1, matplotlib 3.10.1, pandas 2.2.3, numpy 2.1.1
-pygame
-matplotlib
-pandas
-numpy
+pygame==2.6.1
+matplotlib==3.10.1
+pandas==2.2.3
+numpy==2.1.1
