@@ -443,7 +443,7 @@ class Menu:
         title_font = pygame.font.Font(os.path.join("assets", "fonts", "Balthazar.ttf"), 72)
         base_title_y = 100
 
-        modes = [("Stage Mode", "#1B5E20", "#43A047"), ("Hardcore Endless", "#6A1B1A", "#C62828")]
+        modes = [("Stage Mode", "#1B5E20", "#43A047")]
         buttons = []
         button_w, button_h = 360, 70
         spacing = 100
