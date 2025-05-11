@@ -10,6 +10,7 @@ from entities.tile import Tile
 from managers.enemy_manager import get_enemies_for_stage
 from map.random_map_generator import RandomMapGenerator
 from ui.charactor_menu import CharacterSelectUI
+from db.player_data import save_session,generate_player_summary
 from ui.hud import Hud
 from ui.menu import Menu
 
@@ -53,6 +54,7 @@ class Game:
         self.wave_popup_duration = 1500
 
         self.clear_popup_shown = False
+        self.session_saved = False
 
     def home_screen(self):
         result = self.menu.home_screen()
@@ -82,6 +84,8 @@ class Game:
             ui = CharacterSelectUI(self.screen)
             ui.last_surface_copy = self.last_game_surface.copy()
             self.player = ui.select_character(self.player.name)
+            self.player.reset_stats()
+            self.session_saved = False
 
             self.player.enemy_group = self.enemy_group
 
@@ -89,7 +93,6 @@ class Game:
             if saved_player:
                 self.player.time_played = saved_player.time_played
                 self.player.enemies_defeated = saved_player.enemies_defeated
-                self.player.items_collected = saved_player.items_collected
                 self.player.max_state = saved_player.max_state
                 self.player.current_stage = saved_player.current_stage
             self.player.enemy_group = self.enemy_group
@@ -281,17 +284,27 @@ class Game:
                     print("Stage complete!")
                     self.fade_out()
                     self.on_stage_complete()
-                    PlayerDB().update_player(self.player)
-                    self.load_stage(self.player.current_stage)
-                    self.wave_number = 1
-                    self.clear_popup_shown = False
-                    prepare_wave(self.wave_number)
+                    import time
+                    time.sleep(0.5)  # เล็กน้อยเพื่อความนุ่มนวล
+                    self.game_data['state'] = 'game_mode_selection'
+                    return
+                    # self.load_stage(self.player.current_stage)
+                    # self.wave_number = 1
+                    # self.clear_popup_shown = False
+                    # prepare_wave(self.wave_number)
 
+            #(Stat Saved)
             if not self.player.alive:
+                if not self.session_saved:
+                    save_session(self.player)
+                    generate_player_summary()
+                    PlayerDB().update_player(self.player)
+                    self.session_saved = True
+                    self.player.reset_stats()
+                    print(f'[Player Stat] Player die saved data')
                 self.last_game_surface = self.screen.copy()
                 self.menu.show_game_over_screen(self)
                 return
-
 
             # --- Show wave popup message ---
             now = pygame.time.get_ticks()
@@ -338,6 +351,14 @@ class Game:
             self.player.max_state = self.player.current_stage
             #Max Health when changed state
             self.player.health = self.player.max_health
+        if not self.session_saved:
+            self.player.survived = 1 # Win
+            save_session(self.player)
+            generate_player_summary()
+            PlayerDB().update_player(self.player)
+            self.session_saved = True
+            self.player.reset_stats()
+            print(f'[Player Stat] Player Stage completed saved data')
         print(f"[Player] Stage completed. New stage: {self.player.current_stage}")
 
     def run(self):
