@@ -81,6 +81,10 @@ The game consists of modular components:
 
 ---
 
+## Project Proposal
+https://github.com/OverCatX/DungeonEscape/blob/main/Project_Proposal_V.4.pdf
+
+---
 
 ## UML-Diagram
 <img src="https://github.com/OverCatX/DungeonEscape/raw/main/UML.png" width="600"/>
