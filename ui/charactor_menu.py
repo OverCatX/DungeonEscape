@@ -46,7 +46,7 @@ class CharacterSelectUI:
                     pygame.image.load("assets/characters/swordman_thumb.png").convert_alpha(),
                     (64, 64)
                 ),
-                "desc": "Agile melee specialist.\nStrong vs isolated enemies.\nWeak against swarms."
+                "desc": "High-speed melee.\nGreat for hit & run.\nBest against single targets."
             },
             {
                 "type": "Archer",
@@ -54,7 +54,7 @@ class CharacterSelectUI:
                     pygame.image.load("assets/characters/archerman_thumb.png").convert_alpha(),
                     (64, 64)
                 ),
-                "desc": "Long-range attacker.\nEffective vs slow enemies.\nStruggles in close combat."
+                "desc": "Long-range burst fire.\nIdeal for kiting enemies.\nVulnerable when surrounded."
             },
             {
                 "type": "Blink",
@@ -62,7 +62,7 @@ class CharacterSelectUI:
                     pygame.image.load("assets/characters/mage_thumb.png").convert_alpha(),
                     (64, 64)
                 ),
-                "desc": "Burst AoE caster.\nGreat for groups & chokepoints.\nLow HP – avoid direct hits."
+                "desc": "Blink to backstab.\nHeal with every warp.\nExcels in chaotic fights."
             }
         ]
 
