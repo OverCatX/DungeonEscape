@@ -188,27 +188,47 @@ class Menu:
 
     def show_how_to_play(self):
         running = True
-        font = pygame.font.Font(None, 32)
+        title_font = pygame.font.Font(os.path.join("assets", "fonts", "Balthazar.ttf"), 48)
+        text_font = pygame.font.Font(None, 32)
         back_button = pygame.Rect(50, self.screen.get_height() - 70, 150, 50)
 
         while running:
-            self.screen.fill((20, 20, 20))
+            self.screen.fill((15, 15, 20))
+
+            # Draw box background
+            box_width, box_height = 700, 400
+            box_x = self.screen.get_width() // 2 - box_width // 2
+            box_y = 100
+            surface = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
+            pygame.draw.rect(surface, (30, 30, 30, 200), surface.get_rect(), border_radius=15)
+            self.screen.blit(surface, (box_x, box_y))
+            pygame.draw.rect(self.screen, (100, 100, 100), (box_x, box_y, box_width, box_height), 2, border_radius=15)
+
+            # Title
+            title = title_font.render("How to Play", True, pygame.Color("#FFD700"))
+            title_rect = title.get_rect(center=(self.screen.get_width() // 2, box_y + 40))
+            self.screen.blit(title, title_rect)
+
+            # Instructions
             lines = [
-                "How to Play",
-                "",
                 "- Move: WASD",
                 "- Attack: Spacebar",
-                "- Dash: Shift (Blink only)",
-                "- Kill all enemies to unlock the exit",
-                "- Avoid traps, collect items, survive.",
+                "- Dash: Shift (consumes energy)",
+                "- Defeat all enemies to unlock the exit",
+                "- Avoid traps and hazards",
+                "- Collect dropped items (heal potions)",
+                "- Survive as many stages as possible",
+                "- Choose different characters with unique abilities"
             ]
-            for i, line in enumerate(lines):
-                text = font.render(line, True, (255, 255, 255))
-                self.screen.blit(text, (80, 80 + i * 40))
 
-            pygame.draw.rect(self.screen, (100, 100, 100), back_button)
-            back_text = font.render("Back", True, (255, 255, 255))
-            self.screen.blit(back_text, (back_button.x + 30, back_button.y + 10))
+            for i, line in enumerate(lines):
+                text = text_font.render(line, True, (220, 220, 220))
+                self.screen.blit(text, (box_x + 40, box_y + 80 + i * 35))
+
+            # Back Button
+            pygame.draw.rect(self.screen, (100, 100, 100), back_button, border_radius=8)
+            back_text = text_font.render("Back", True, (255, 255, 255))
+            self.screen.blit(back_text, (back_button.x + 45, back_button.y + 12))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -296,7 +316,7 @@ class Menu:
 
     def draw_player_stats_ui(self, player):
         box_width = 600
-        box_height = 550
+        box_height = 600  # Increased to avoid button overlap
         box_x = self.screen.get_width() // 2 - box_width // 2
         box_y = 80
 
@@ -334,13 +354,14 @@ class Menu:
         if stats_row:
             info = [
                 ("Username", player.name),
+                ("Current Stage", player.current_stage),
                 ("Total Sessions", stats_row.get("total_sessions", "-")),
                 ("Avg Time Played", stats_row.get("time_played", "-")),
                 ("Avg Enemies Defeated", stats_row.get("enemies_defeated", "-")),
                 ("Avg Dash Used", stats_row.get("dash_used", "-")),
                 ("Avg Traps Triggered", stats_row.get("traps_triggered", "-")),
                 ("Avg Distance Traveled", stats_row.get("distance_traveled", "-")),
-                ("Win Rate", f"{float(stats_row.get('survived', 0))*100:.1f}%")
+                ("Win Rate", f"{float(stats_row.get('survived', 0)) * 100:.1f}%")
             ]
         else:
             info = [
@@ -364,8 +385,8 @@ class Menu:
         button_height = 50
         spacing = 40
 
-        button_y = animated_box_y + box_height - button_height - 50
-        leaderboard_button_y = animated_box_y + box_height - button_height - 0
+        button_y = animated_box_y + box_height - button_height - 60
+        leaderboard_button_y = animated_box_y + box_height - button_height - 5
 
         self.back_button = pygame.Rect(
             self.screen.get_width() // 2 - button_width - spacing // 2,
