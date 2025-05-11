@@ -27,7 +27,6 @@ class PlayerStatVisualizer(tk.Tk):
         self.graph_var = tk.StringVar()
         self.graph_options = {
             "Bar Chart": self.plot_bar_chart,
-            "Radar Chart": self.plot_radar_chart,
         }
 
         self.setup_ui()

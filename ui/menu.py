@@ -427,7 +427,7 @@ class Menu:
 
         self.draw_button(
             self.leaderboard_button,
-            "Visualize Stats",
+            "Your Visualize",
             base_color=pygame.Color("#3949AB"),
             hover_color=pygame.Color("#5C6BC0"),
             text_color=pygame.Color("#E8EAF6")
