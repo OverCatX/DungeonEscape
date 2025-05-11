@@ -88,6 +88,13 @@ class Menu:
                     elif self.exit_button.collidepoint(event.pos):
                         running = False
                         return 'exit'
+                    elif self.how_to_button.collidepoint(event.pos):
+                        self.show_how_to_play()
+                        # print('test')
+                    elif self.visualizer_button.collidepoint(event.pos):
+                        import subprocess
+                        subprocess.Popen(["python", "stats/visualizer.py"])
+
                 elif event.type == pygame.KEYDOWN:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_BACKSPACE:
@@ -144,6 +151,8 @@ class Menu:
 
         self.start_button = pygame.Rect(center_x, start_y, button_width, button_height)
         self.exit_button = pygame.Rect(center_x, start_y + button_height + 25, button_width, button_height)
+        self.how_to_button = pygame.Rect(center_x, start_y + (button_height + 25) * 2, button_width, button_height)
+        self.visualizer_button = pygame.Rect(center_x, start_y + (button_height + 25) * 3, button_width, button_height)
 
         self.draw_button(
             self.start_button,
@@ -160,6 +169,56 @@ class Menu:
             hover_color=(255, 100, 100),
             text_color=(0, 0, 0)
         )
+
+        self.draw_button(
+            self.how_to_button,
+            "How to Play",
+            base_color=pygame.Color('#607D8B'),
+            hover_color=pygame.Color('#78909C'),
+            text_color=(255, 255, 255)
+        )
+
+        self.draw_button(
+            self.visualizer_button,
+            "Visualizer",
+            base_color=pygame.Color('#3949AB'),
+            hover_color=pygame.Color('#5C6BC0'),
+            text_color=(255, 255, 255)
+        )
+
+    def show_how_to_play(self):
+        running = True
+        font = pygame.font.Font(None, 32)
+        back_button = pygame.Rect(50, self.screen.get_height() - 70, 150, 50)
+
+        while running:
+            self.screen.fill((20, 20, 20))
+            lines = [
+                "How to Play",
+                "",
+                "- Move: WASD",
+                "- Attack: Spacebar",
+                "- Dash: Shift (Blink only)",
+                "- Kill all enemies to unlock the exit",
+                "- Avoid traps, collect items, survive.",
+            ]
+            for i, line in enumerate(lines):
+                text = font.render(line, True, (255, 255, 255))
+                self.screen.blit(text, (80, 80 + i * 40))
+
+            pygame.draw.rect(self.screen, (100, 100, 100), back_button)
+            back_text = font.render("Back", True, (255, 255, 255))
+            self.screen.blit(back_text, (back_button.x + 30, back_button.y + 10))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if back_button.collidepoint(event.pos):
+                        running = False
+
+            pygame.display.flip()
 
     def draw_input_box(self):
         border_radius = 10
@@ -234,7 +293,7 @@ class Menu:
 
     def draw_player_stats_ui(self, player):
         box_width = 600
-        box_height = 500
+        box_height = 550
         box_x = self.screen.get_width() // 2 - box_width // 2
         box_y = 80
 
@@ -258,7 +317,6 @@ class Menu:
 
         stats_font = pygame.font.Font(None, 36)
 
-        # Load player.csv summary row
         stats_row = None
         try:
             with open("stats/players.csv", newline='') as f:
@@ -283,8 +341,7 @@ class Menu:
             ]
         else:
             info = [
-                ("No gameplay data yet.", ""),
-                ("Start your first run", "to track stats!")
+                ("No gameplay data yet. Start your first run", "")
             ]
 
         start_y = title_rect.bottom + 20
@@ -304,8 +361,8 @@ class Menu:
         button_height = 50
         spacing = 40
 
-        button_y = animated_box_y + box_height - button_height - 70
-        leaderboard_button_y = animated_box_y + box_height - button_height - 10
+        button_y = animated_box_y + box_height - button_height - 50
+        leaderboard_button_y = animated_box_y + box_height - button_height - 0
 
         self.back_button = pygame.Rect(
             self.screen.get_width() // 2 - button_width - spacing // 2,
@@ -346,7 +403,7 @@ class Menu:
 
         self.draw_button(
             self.leaderboard_button,
-            "Leaderboard",
+            "Visualize Stats",
             base_color=pygame.Color("#3949AB"),
             hover_color=pygame.Color("#5C6BC0"),
             text_color=pygame.Color("#E8EAF6")
@@ -441,6 +498,8 @@ class Menu:
                     if restart_button.collidepoint(event.pos):
                         game.player = game.player.__class__(name=game.player.name,current_stage=game.player.current_stage)
                         game.player_group = pygame.sprite.Group(game.player)
+                        game.session_saved = False #Reset Stat
+                        game.player.reset_stats()
                         game.game_data['state'] = 'on_game'
                         return
                     elif home_button.collidepoint(event.pos):
