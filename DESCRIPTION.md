@@ -81,46 +81,27 @@ The game consists of modular components:
 
 ---
 
+
+## UML-Diagram
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/UML.png" width="600"/>
+---
+
+## Game Previews
+
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/gameplay/1_home_screen.png?raw=true" width="600"/>
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/gameplay/6_charactor_blink.png?raw=true" width="600"/>
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/gameplay/9_blink_playing.png?raw=true" width="600"/>
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/gameplay/8_archer_playing.png?raw=true" width="600"/>
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/gameplay/11_health_item.png?raw=true" width="600"/>
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/gameplay/2_individual_player_stat_overview.png?raw=true" width="600"/>
+
+---
+
 ## Visualization Previews
-![Histogram](https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/visualization/Histogram_Time_Spending.png?raw=true)
-![Bar](https://github.com/OverCatX/DungeonEscape/blob/main/screenshots/visualization/Bar_Average_Dash_by_Charactor.png?raw=true)
-![Scatter](https://github.com/OverCatX/DungeonEscape/blob/main/screenshots/visualization/Scatter_Enemies_vs_Survival.png?raw=true)
-![Pie](https://github.com/OverCatX/DungeonEscape/blob/main/screenshots/visualization/Pie_Chart_Charactor_Used.png?raw=true)
-![Line](https://github.com/OverCatX/DungeonEscape/blob/main/screenshots/visualization/Line_Distance_Traveled.png?raw=true)
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/visualization/Histogram_Time_Spending.png?raw=true" width="600"/>
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/visualization/Bar_Average_Dash_by_Charactor.png?raw=true" width="600"/>
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/visualization/Scatter_Enemies_vs_Survival.png?raw=true" width="600"/>
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/visualization/Pie_Chart_Charactor_Used.png?raw=true" width="600"/>
+<img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/visualization/Line_Distance_Traveled.png?raw=true" width="600"/>
 
 ---
-
-## UML & Project Structure
-See `screenshots/uml/uml_diagram.png` or link below:
-```
-DungeonEscape/
-├── game.py
-├── entities/      # Player, Enemy, Items
-├── ui/            # Menus, HUD
-├── map/           # RandomMapGenerator
-├── db/            # PlayerDB
-├── stats/         # CSV save files
-├── visualizer/    # tkinter viewer
-```
-
----
-
-## Run Instructions
-```bash
-git clone https://github.com/OverCatX/DungeonEscape.git
-cd DungeonEscape
-pip install -r requirements.txt
-python main.py
-```
-
-> Uses: `pygame`, `matplotlib`, `pandas`, `numpy`, `tkinter`
-
----
-
-## 🎬 Video Presentation
-🎥 https://youtube.com/your_video_link
-
----
-
-## License
-MIT License (see `LICENSE` file)
