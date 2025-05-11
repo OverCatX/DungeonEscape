@@ -83,6 +83,8 @@ class Game:
             ui.last_surface_copy = self.last_game_surface.copy()
             self.player = ui.select_character(self.player.name)
 
+            self.player.enemy_group = self.enemy_group
+
             saved_player = PlayerDB().player_login(self.player.name)
             if saved_player:
                 self.player.time_played = saved_player.time_played
@@ -90,7 +92,7 @@ class Game:
                 self.player.items_collected = saved_player.items_collected
                 self.player.max_state = saved_player.max_state
                 self.player.current_stage = saved_player.current_stage
-
+            self.player.enemy_group = self.enemy_group
             self.player_group.empty()
             self.player_group.add(self.player)
             print(self.player)
@@ -146,7 +148,7 @@ class Game:
         self.load_stage(self.player.current_stage)
         self.wave_number = 1
         self.total_waves = min(3 + self.player.current_stage // 2, 10)
-
+        # self.player.enemy_group = self.enemy_group
         def prepare_wave(wave):
             self.enemy_group.empty()
             self.item_group.empty()
@@ -163,7 +165,6 @@ class Game:
             self.wave_popup_timer = pygame.time.get_ticks()
 
         prepare_wave(self.wave_number)
-
         exit_rect = next((s.rect for s in self.tile_group if getattr(s, 'tile_type', '') == 'exit'), None)
         stage_running = True
 
@@ -222,19 +223,22 @@ class Game:
                     sprite.draw(self.screen)
                 else:
                     self.screen.blit(sprite.image, sprite.rect)
+
+            #Projectiles
             if hasattr(self.player, 'projectiles'):
-                for arrow in self.player.projectiles:
-                    enemy = pygame.sprite.spritecollideany(arrow, self.enemy_group)
-                    if enemy and enemy.alive:
-                        arrow.deal_damage(enemy)
-                        if not enemy.alive:
-                            if random.random() < 0.6:
-                                drop = DropItem(enemy.rect.centerx, enemy.rect.centery, 'health')
-                                self.item_group.add(drop)
-                            self.enemy_group.remove(enemy)
-                            self.enemies.remove(enemy)
-                            self.wave_enemies_remaining = max(0, self.wave_enemies_remaining - 1)
-                            self.player.enemies_defeated += 1
+                for proj in list(self.player.projectiles):
+                    if hasattr(proj, 'deal_damage'):
+                        enemy = pygame.sprite.spritecollideany(proj, self.enemy_group)
+                        if enemy and enemy.alive:
+                            proj.deal_damage(enemy)
+                            if not enemy.alive:
+                                if random.random() < 0.6:
+                                    drop = DropItem(enemy.rect.centerx, enemy.rect.centery, 'health')
+                                    self.item_group.add(drop)
+                                self.enemy_group.remove(enemy)
+                                self.enemies.remove(enemy)
+                                self.wave_enemies_remaining -= 1
+                                self.player.enemies_defeated += 1
 
             for enemy in list(self.enemy_group):
                 enemy.update(dt, player=self.player)
@@ -333,7 +337,7 @@ class Game:
         if self.player.current_stage > self.player.max_state:
             self.player.max_state = self.player.current_stage
             #Max Health when changed state
-            self.player.health = 100
+            self.player.health = self.player.max_health
         print(f"[Player] Stage completed. New stage: {self.player.current_stage}")
 
     def run(self):
