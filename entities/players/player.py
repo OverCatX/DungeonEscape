@@ -50,8 +50,8 @@ class Player(Entity):
         self.hit_flash_duration = 500
 
         # Player Stats
-        self.time_played = time_played
-        self.enemies_defeated = enemies_defeated
+        self.time_played = 0
+        self.enemies_defeated = 0
         self.max_state = max_state
         self.traps_triggered = 0
         self.distance_traveled = 0.0
@@ -76,6 +76,9 @@ class Player(Entity):
     def update(self, dt, tile_group=None, enemy_group=None):
         now = pygame.time.get_ticks()
         self.time_played += dt
+
+        old_x, old_y = self.rect.x, self.rect.y
+
         # Energy
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
@@ -106,7 +109,10 @@ class Player(Entity):
         # update animation sprite
         super().update(dt)
 
-        # print(self.distance_traveled)
+        # Travel Distance (Stat)
+        dx = abs(self.rect.x - old_x)
+        dy = abs(self.rect.y - old_y)
+        self.distance_traveled += dx + dy
 
         # Flash effect when hit
         if self.hit_flash:
@@ -137,19 +143,15 @@ class Player(Entity):
 
         if keys[pygame.K_a]:
             self.move_x = -self.speed
-            self.distance_traveled += 1
             self.facing = 'left'
         elif keys[pygame.K_d]:
             self.move_x = self.speed
-            self.distance_traveled += 1
             self.facing = 'right'
         if keys[pygame.K_w]:
             self.move_y = -self.speed
-            self.distance_traveled += 1
             self.facing = 'up'
         elif keys[pygame.K_s]:
             self.move_y = self.speed
-            self.distance_traveled += 1
             self.facing = 'down'
 
     def draw(self, surface):
@@ -221,14 +223,14 @@ class Player(Entity):
         print(f"{self.name} has died.")
         self.alive = False
 
-    def update_max_state(self, max_state):
-        self.max_state = max_state
-
-    def update_time_played(self, time_played):
-        self.time_played = time_played
-
-    def update_enemies_defeated(self, enemies_defeated):
-        self.enemies_defeated = enemies_defeated
+    def reset_stats(self):
+        self.time_played = 0
+        self.enemies_defeated = 0
+        self.items_collected = 0
+        self.traps_triggered = 0
+        self.dash_used = 0
+        self.distance_traveled = 0
+        self.survived = 0
 
     def __str__(self):
         return (f'Player: {self.name}, State: {self.current_stage}, MaxState: {self.max_state}, '
