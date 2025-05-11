@@ -5,7 +5,7 @@ from entities.players.player import Player
 class PlayerAssassin(Player):
     dagger_image = None
 
-    def __init__(self, x=0, y=0, name="Assassin",character_type="assassin", **kwargs):
+    def __init__(self, x=0, y=0, name="Assassin",character_type="Assassin", **kwargs):
         super().__init__(asset_folder = 'characters/assassin', x=x, y=y, name=name, character_type=character_type, **kwargs)
         self.attack_range = 60
         self.max_health = 100

@@ -5,7 +5,7 @@ from entities.projectiles.arrow import Arrow
 class PlayerArcher(Player):
     arrow_image = None
 
-    def __init__(self, x=0, y=0, name="Archer", character_type="archer", **kwargs):
+    def __init__(self, x=0, y=0, name="Archer", character_type="Archer", **kwargs):
         super().__init__(asset_folder='characters/archer', x=x, y=y, name=name, character_type=character_type, **kwargs)
         self.attack_range = 60
         self.attack_cooldown = 150  # cooldown per shot during burst

@@ -2,7 +2,7 @@ import pygame
 from entities.players.player import Player
 
 class PlayerBlink(Player):
-    def __init__(self, x=0, y=0, name="BlinkAssassin", character_type="blink", **kwargs):
+    def __init__(self, x=0, y=0, name="BlinkAssassin", character_type="Blink", **kwargs):
         super().__init__(asset_folder='characters/blink', x=x, y=y, name=name, character_type=character_type, **kwargs)
         self.health = 60
         self.speed *= 1.5
