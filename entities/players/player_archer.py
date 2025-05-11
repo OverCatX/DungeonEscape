@@ -14,7 +14,8 @@ class PlayerArcher(Player):
         self.attack_duration = 200
         self.projectiles = pygame.sprite.Group()
         self.arrow_speed = 7
-
+        self.health = 120
+        self.max_health = 120
         # Burst Mode
         self.burst_limit = 3
         self.burst_count = 0

@@ -8,6 +8,7 @@ class PlayerAssassin(Player):
     def __init__(self, x=0, y=0, name="Assassin",character_type="assassin", **kwargs):
         super().__init__(asset_folder = 'characters/assassin', x=x, y=y, name=name, character_type=character_type, **kwargs)
         self.attack_range = 60
+        self.max_health = 100
         self.damage = 40
         self.attack_direction = 'right'
         self.dagger_offset = 32

@@ -9,6 +9,7 @@ class Player(Entity):
         super().__init__(asset_folder=asset_folder, x=x, y=y)
         self.name = name
         self.health = health
+        self.max_health = 100
         self.armor = armor
         self.character_type = character_type
         self.setup_stats_by_type()
@@ -63,6 +64,10 @@ class Player(Entity):
             self.health = 100
             self.damage = 10
             self.speed = 3
+        elif self.character_type == 'blink':
+            self.health = 60
+            self.damage = 10
+            self.speed = 4
 
     def update(self, dt, tile_group=None, enemy_group=None):
         now = pygame.time.get_ticks()
