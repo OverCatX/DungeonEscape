@@ -1,11 +1,19 @@
-import csv
 import os
+import csv
+import pandas as pd
 from entities.players.player import Player
+
+SAVE_FOLDER = "stats"
+SESSION_FILE = os.path.join(SAVE_FOLDER, "session_log.csv")
+SUMMARY_FILE = os.path.join(SAVE_FOLDER, "players.csv")
+PLAYER_FILE = os.path.join("db", "players.csv")
+
+os.makedirs(SAVE_FOLDER, exist_ok=True)
 
 class PlayerDB:
     def __init__(self):
-        self.file_path = os.path.join("db", "players.csv")
-        self.fieldnames = ['name', 'max_state', 'current_stage', 'time_played', 'enemies_defeated', 'items_collected']
+        self.file_path = PLAYER_FILE
+        self.fieldnames = ['name', 'max_state', 'current_stage', 'time_played', 'enemies_defeated']
 
         if not os.path.exists(self.file_path):
             with open(self.file_path, 'w', newline='') as file:
@@ -39,10 +47,10 @@ class PlayerDB:
 
         for row in players:
             if row['name'] == player.name:
-                row['max_state'] = player.max_state
-                row['current_stage'] = player.current_stage
-                row['time_played'] = round(player.time_played, 2)
-                row['enemies_defeated'] = player.enemies_defeated
+                row['max_state'] = max(player.max_state, int(row['max_state']))
+                row['current_stage'] = max(player.current_stage, int(row.get('current_stage', 1)))
+                row['time_played'] = round(float(row['time_played']) + player.time_played, 2)
+                row['enemies_defeated'] = int(row['enemies_defeated']) + player.enemies_defeated
                 updated = True
                 break
 
@@ -51,7 +59,7 @@ class PlayerDB:
                 'name': player.name,
                 'max_state': player.max_state,
                 'current_stage': player.current_stage,
-                'time_played': player.time_played,
+                'time_played': round(player.time_played, 2),
                 'enemies_defeated': player.enemies_defeated
             })
 
@@ -62,7 +70,6 @@ class PlayerDB:
 
     def update_player(self, player):
         self.save_player(player)
-
 
 def save_session(player):
     log = {
@@ -76,13 +83,31 @@ def save_session(player):
         "survived": player.survived
     }
 
-    os.makedirs("stats", exist_ok=True)
-    file_path = "stats/session_log.csv"
-    file_exists = os.path.exists(file_path)
-
-    with open(file_path, mode='a', newline='') as f:
+    file_exists = os.path.exists(SESSION_FILE)
+    with open(SESSION_FILE, mode='a', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=log.keys())
         if not file_exists:
             writer.writeheader()
         writer.writerow(log)
     print(f'(Session) Saved Player: {player.name} with {log}')
+
+def generate_player_summary():
+    if not os.path.exists(SESSION_FILE):
+        print("No session data to summarize.")
+        return
+
+    df = pd.read_csv(SESSION_FILE)
+    grouped = df.groupby("name").agg({
+        "time_played": "mean",
+        "enemies_defeated": "mean",
+        "dash_used": "mean",
+        "traps_triggered": "mean",
+        "distance_traveled": "mean",
+        "survived": "mean",
+        "name": "count"
+    }).rename(columns={"name": "total_sessions"})
+
+    grouped = grouped.reset_index()
+    grouped = grouped.round(2)
+    grouped.to_csv(SUMMARY_FILE, index=False)
+    print(f"Player summary saved to {SUMMARY_FILE}")
