@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -16,7 +18,7 @@ class GraphViewer(tk.Tk):
 
         self.graph_var = tk.StringVar()
         self.graph_options = {
-            "Histogram: Time Played": self.plot_histogram,
+            "Histogram: Time Spent": self.plot_histogram,
             "Pie Chart: Character Used": self.plot_pie,
             "Scatter: Enemies vs Survival": self.plot_scatter,
             "Bar: Avg Dash by Character": self.plot_bar,
@@ -60,8 +62,8 @@ class GraphViewer(tk.Tk):
 
     def plot_histogram(self, ax):
         ax.hist(self.df["time_played"], bins=10, color='skyblue', edgecolor='black')
-        ax.set_title("Time Played Histogram")
-        ax.set_xlabel("Time Played (seconds)")
+        ax.set_title("Time Spent Histogram")
+        ax.set_xlabel("Time Spent (seconds)")
         ax.set_ylabel("Sessions")
 
     def plot_pie(self, ax):
@@ -70,10 +72,13 @@ class GraphViewer(tk.Tk):
         ax.set_title("Character Usage")
 
     def plot_scatter(self, ax):
-        ax.scatter(self.df["enemies_defeated"], self.df["survived"], color='orange', alpha=0.6)
-        ax.set_title("Enemies Defeated vs Survival")
+        y_jitter = self.df['survived'] + np.random.uniform(-0.05, 0.05, size=len(self.df))
+
+        ax.clear()
+        ax.scatter(self.df['enemies_defeated'], y_jitter, alpha=0.5, color='orange')
         ax.set_xlabel("Enemies Defeated")
-        ax.set_ylabel("Survived (0=No, 1=Yes)")
+        ax.set_ylabel("Survival (jittered)")
+        ax.set_title("Enemies Defeated vs Survival")
         ax.grid(True)
 
     def plot_bar(self, ax):
