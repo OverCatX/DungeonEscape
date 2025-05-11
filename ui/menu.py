@@ -1,6 +1,7 @@
 import csv
 import math
 import os
+import subprocess
 import sys
 import time
 
@@ -92,8 +93,7 @@ class Menu:
                         self.show_how_to_play()
                         # print('test')
                     elif self.visualizer_button.collidepoint(event.pos):
-                        import subprocess
-                        subprocess.Popen(["python", "stats/visualizer.py"])
+                        subprocess.Popen(["python3", "stats/visualizer.py"])
 
                 elif event.type == pygame.KEYDOWN:
                     if event.type == pygame.KEYDOWN:
@@ -285,6 +285,9 @@ class Menu:
                         return "continue"
                     elif self.back_button.collidepoint(event.pos):
                         return "back"
+                    elif self.leaderboard_button.collidepoint(event.pos):
+                        # subprocess.Popen(["python3", "stats/visualizer_player_stats.py", player.name])
+                        subprocess.Popen(["python", "stats/visualizer_player_stats.py", player.name])
 
             pygame.display.flip()
             clock.tick(60)
