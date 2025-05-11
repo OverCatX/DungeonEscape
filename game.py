@@ -114,6 +114,8 @@ class Game:
         generator = RandomMapGenerator(tile_w, tile_h)
         map_data = generator.generate()
 
+        self.clear_popup_shown = False
+
         self.tile_group.empty()
         self.player_group.empty()
         self.enemy_group.empty()
@@ -285,8 +287,8 @@ class Game:
                     self.fade_out()
                     self.on_stage_complete()
                     import time
-                    time.sleep(0.5)  # เล็กน้อยเพื่อความนุ่มนวล
-                    self.game_data['state'] = 'game_mode_selection'
+                    time.sleep(0.5)
+                    self.game_data['state'] = 'player_progress'
                     return
                     # self.load_stage(self.player.current_stage)
                     # self.wave_number = 1
