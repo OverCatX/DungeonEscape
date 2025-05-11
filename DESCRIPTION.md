@@ -111,3 +111,8 @@ https://github.com/OverCatX/DungeonEscape/blob/main/Project_Proposal_V.4.pdf
 <img src="https://github.com/OverCatX/DungeonEscape/raw/main/screenshots/visualization/Line_Distance_Traveled.png?raw=true" width="600"/>
 
 ---
+
+## 🎥 Project Presentation Video
+
+YouTube Link: [Watch the Demo Here](https://youtu.be/QCp5Ip2avjc?feature=shared)
+
