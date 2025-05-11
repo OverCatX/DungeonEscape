@@ -52,8 +52,12 @@ class Player(Entity):
         # Player Stats
         self.time_played = time_played
         self.enemies_defeated = enemies_defeated
-        self.items_collected = items_collected
         self.max_state = max_state
+        self.traps_triggered = 0
+        self.distance_traveled = 0.0
+        self.survived = 1
+        self.dash_used = 0
+        self.was_dashing = False
 
     def setup_stats_by_type(self):
         if self.character_type == 'assassin':
@@ -71,7 +75,7 @@ class Player(Entity):
 
     def update(self, dt, tile_group=None, enemy_group=None):
         now = pygame.time.get_ticks()
-
+        self.time_played += dt
         # Energy
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
@@ -102,6 +106,8 @@ class Player(Entity):
         # update animation sprite
         super().update(dt)
 
+        # print(self.distance_traveled)
+
         # Flash effect when hit
         if self.hit_flash:
             elapsed = now - self.hit_flash_timer
@@ -120,19 +126,30 @@ class Player(Entity):
 
         is_dashing = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
         can_dash = self.energy > 0
+
+        #Detect dash start (Stat)
+        if is_dashing and can_dash and not self.was_dashing:
+            self.dash_used += 1
+            print(f"[Stat] Dash used: {self.dash_used}")
+        self.was_dashing = is_dashing and can_dash
+
         self.speed = self.dash_speed if is_dashing and can_dash else self.normal_speed
 
         if keys[pygame.K_a]:
             self.move_x = -self.speed
+            self.distance_traveled += 1
             self.facing = 'left'
         elif keys[pygame.K_d]:
             self.move_x = self.speed
+            self.distance_traveled += 1
             self.facing = 'right'
         if keys[pygame.K_w]:
             self.move_y = -self.speed
+            self.distance_traveled += 1
             self.facing = 'up'
         elif keys[pygame.K_s]:
             self.move_y = self.speed
+            self.distance_traveled += 1
             self.facing = 'down'
 
     def draw(self, surface):
@@ -180,6 +197,8 @@ class Player(Entity):
             self.last_trap_hit_time = now
             self.hit_flash = True
             self.hit_flash_timer = now
+            self.traps_triggered += 1
+            print(self.traps_triggered)
             print(f"[Trap] {self.name} took damage: {amount}, HP = {self.health}")
             if self.health <= 0:
                 self.die()
@@ -211,10 +230,7 @@ class Player(Entity):
     def update_enemies_defeated(self, enemies_defeated):
         self.enemies_defeated = enemies_defeated
 
-    def update_items_collected(self, items_collected):
-        self.items_collected = items_collected
-
     def __str__(self):
         return (f'Player: {self.name}, State: {self.current_stage}, MaxState: {self.max_state}, '
                 f'TimePlayed: {self.time_played}, EnemiesDefeated: {self.enemies_defeated}, '
-                f'ItemsCollected: {self.items_collected}')
+                f'Dash: {self.dash_used}, Distance: {self.distance_traveled}')
